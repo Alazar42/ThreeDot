@@ -1,11 +1,23 @@
-# ThreeDot
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="public/logo/whitelogo.png">
+    <source media="(prefers-color-scheme: light)" srcset="public/logo/blacklogo.png">
+    <img alt="ThreeDot" src="public/logo/whitelogo.png" width="140" height="140">
+  </picture>
+</p>
 
-> **A production-grade, Godot-inspired framework for Three.js.**
-> Bringing structured scene trees, deterministic lifecycles, type-safe signals, unified input maps, 2D/3D nodes, and an integrated UI system to web 3D.
+<h1 align="center">ThreeDot</h1>
 
-[![npm version](https://img.shields.io/badge/npm-v0.1.0-blue.svg)](https://www.npmjs.com/package/threedot)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+  <strong>A production-grade, Godot-inspired framework for Three.js.</strong><br>
+  Bringing structured scene trees, deterministic lifecycles, type-safe signals, unified input maps, 2D/3D nodes, and an integrated UI system to web 3D.
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/threedot"><img src="https://img.shields.io/badge/npm-v0.1.0-blue.svg" alt="npm version"></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.0+-blue.svg" alt="TypeScript"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+</p>
 
 ---
 
@@ -159,18 +171,18 @@ SignalBus.connect('spawn_item', (itemType: string, points: number) => {
                   └───────┬───────┘
                           │ owns
         ┌─────────────────┼──────────────────┐
-        ▼                 ▼                  ▼
+        v                 v                  v
   ┌───────────┐    ┌─────────────┐    ┌─────────────┐
   │ SceneTree │    │ InputManager│    │  SignalBus  │
   └─────┬─────┘    └─────────────┘    └─────────────┘
         │ root
-        ▼
+        v
    ┌─────────┐
-   │  Node   │ ◀────── Base class for all scene entities
+   │  Node   │ <────── Base class for all scene entities
    └────┬────┘
         │
    ┌────┴───────────────────────────┬───────────────────────────┐
-   ▼                                ▼                           ▼
+   v                                v                           v
 ┌──────────────┐             ┌──────────────┐            ┌──────────────┐
 │    Node3D    │             │    Node2D    │            │   Control    │
 │  (3D World)  │             │  (2D Canvas) │            │  (Godot UI)  │
