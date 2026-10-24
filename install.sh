@@ -199,17 +199,17 @@ const engine = new Engine({
 });
 
 // 2. Setup Camera
-const camera = new Camera3D('MainCamera');
+const camera = new Camera3D({ name: 'MainCamera', fov: 75 });
 camera.position.set(0, 3, 5);
-camera.lookAt(0, 0, 0);
+camera.lookAt({ x: 0, y: 0, z: 0 });
 engine.sceneTree.root.addChild(camera);
 
 // 3. Setup Lighting
-const sun = new DirectionalLight3D('Sun', 2.0);
+const sun = new DirectionalLight3D({ name: 'Sun', intensity: 2.0 });
 sun.position.set(5, 10, 5);
 engine.sceneTree.root.addChild(sun);
 
-const ambient = new AmbientLight3D('Ambient', 0.4);
+const ambient = new AmbientLight3D({ name: 'Ambient', intensity: 0.4 });
 engine.sceneTree.root.addChild(ambient);
 
 // 4. Create Player Cube with deterministic _process frame tick
@@ -220,7 +220,8 @@ class RotatingCube extends MeshInstance3D {
   }
 }
 
-const cube = new RotatingCube('PlayerCube', {
+const cube = new RotatingCube({
+  name: 'PlayerCube',
   geometry: 'box',
   material: { color: 0x4a9eff, roughness: 0.3, metalness: 0.2 },
 });
@@ -228,7 +229,7 @@ cube.position.set(0, 0, 0);
 engine.sceneTree.root.addChild(cube);
 
 // 5. Connect HTML button signal directly to game logic
-SignalBus.on('change_color', () => {
+SignalBus.connect('change_color', () => {
   const palette = [0x4a9eff, 0xff4a80, 0x4aff80, 0xffbb4a, 0xbb4aff, 0xffffff];
   const nextColor = palette[Math.floor(Math.random() * palette.length)];
   (cube.mesh.material as any).color.setHex(nextColor);
