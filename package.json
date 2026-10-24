@@ -34,9 +34,14 @@
     "README.md"
   ],
   "sideEffects": false,
+  "workspaces": [
+    "api_docs"
+  ],
   "scripts": {
-    "dev": "vite api_docs",
-    "docs": "vite api_docs",
+    "dev": "npm --workspace=api_docs run dev",
+    "docs:dev": "npm --workspace=api_docs run dev",
+    "docs:build": "npm --workspace=api_docs run build",
+    "docs:preview": "npm --workspace=api_docs run preview",
     "build": "tsup",
     "build:check": "tsc --noEmit",
     "test": "vitest run",
@@ -66,7 +71,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/Alazar42/ThreeDot.git"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -74,30 +79,18 @@
   "dependencies": {
     "@dimforge/rapier2d-compat": "^0.21.0",
     "@dimforge/rapier3d-compat": "^0.21.0",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^9.5.0",
-    "@mui/material": "^9.5.0",
-    "prismjs": "^1.30.0",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
     "three": "^0.186.1",
     "troika-three-text": "^0.52.5"
   },
   "devDependencies": {
-    "@types/prismjs": "^1.26.6",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
     "@types/three": "^0.186.0",
     "@typescript-eslint/eslint-plugin": "^8.72.0",
     "@typescript-eslint/parser": "^8.72.0",
-    "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^10.13.0",
     "happy-dom": "^21.0.4",
     "prettier": "^3.9.10",
     "tsup": "^9.0.0",
     "typescript": "^6.0.3",
-    "vite": "^8.3.5",
     "vitest": "^5.0.5"
   }
 }
