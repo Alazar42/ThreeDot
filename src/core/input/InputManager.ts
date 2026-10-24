@@ -483,6 +483,36 @@ export class InputManager {
   // ── Event Handlers ──
 
   private _onKeyDown(e: KeyboardEvent): void {
+    // If a button or UI element is focused, blur it so Space/Enter does not trigger synthetic click
+    if (typeof document !== 'undefined' && document.activeElement) {
+      const activeEl = document.activeElement as HTMLElement;
+      if (activeEl.tagName === 'BUTTON' || activeEl.hasAttribute('threedot-signal') || activeEl.closest('button')) {
+        if (typeof activeEl.blur === 'function') activeEl.blur();
+      }
+    }
+
+    // Prevent default browser scrolling on Space and Arrow keys
+    const isInputField =
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLTextAreaElement ||
+      e.target instanceof HTMLSelectElement ||
+      (e.target as HTMLElement)?.isContentEditable;
+
+    if (!isInputField) {
+      if (
+        e.code === 'Space' ||
+        e.key === ' ' ||
+        e.code === 'ArrowUp' ||
+        e.code === 'ArrowDown' ||
+        e.code === 'ArrowLeft' ||
+        e.code === 'ArrowRight' ||
+        e.code === 'PageUp' ||
+        e.code === 'PageDown'
+      ) {
+        e.preventDefault();
+      }
+    }
+
     if (this.keysPressed.has(e.code)) return; // Ignore repeat
 
     this.keysPressed.add(e.code);

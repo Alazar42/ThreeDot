@@ -95,6 +95,21 @@ class SignalBusManager {
             'click';
 
           if (event.type === expectedEvent) {
+            // Prevent default browser behavior (such as scrolling or focus retention)
+            event.preventDefault();
+
+            // Automatically blur button so subsequent Space/Enter presses do not trigger click
+            if (typeof target.blur === 'function') {
+              target.blur();
+            }
+            if (
+              typeof document !== 'undefined' &&
+              document.activeElement &&
+              typeof (document.activeElement as HTMLElement).blur === 'function'
+            ) {
+              (document.activeElement as HTMLElement).blur();
+            }
+
             let params: any[] = [];
             const rawParams =
               target.getAttribute('threedot-params') ||
@@ -124,9 +139,55 @@ class SignalBusManager {
       }
     };
 
+    // Auto-blur any button on click so keyboard focus never sticks to buttons
+    const handleButtonBlur = (event: Event) => {
+      const el = event.target as HTMLElement | null;
+      const btn = (el?.tagName === 'BUTTON' ? el : el?.closest('button')) as HTMLElement | null;
+      if (btn && typeof btn.blur === 'function') {
+        btn.blur();
+      }
+    };
+
+    // Prevent page scrolling on Space and Arrow keys, and prevent Space from clicking focused buttons
+    const handleGameKeys = (event: KeyboardEvent) => {
+      const activeEl = typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null;
+      if (activeEl && (activeEl.tagName === 'BUTTON' || activeEl.hasAttribute('threedot-signal') || activeEl.closest('button'))) {
+        if (typeof activeEl.blur === 'function') {
+          activeEl.blur();
+        }
+      }
+
+      const target = event.target as HTMLElement | null;
+      const isInput =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        target?.isContentEditable;
+
+      if (!isInput) {
+        if (
+          event.code === 'Space' ||
+          event.key === ' ' ||
+          event.code === 'ArrowUp' ||
+          event.code === 'ArrowDown' ||
+          event.code === 'ArrowLeft' ||
+          event.code === 'ArrowRight' ||
+          event.code === 'PageUp' ||
+          event.code === 'PageDown'
+        ) {
+          event.preventDefault();
+        }
+      }
+    };
+
     targetRoot.addEventListener('click', handleDOMSignalEvent);
     targetRoot.addEventListener('change', handleDOMSignalEvent);
     targetRoot.addEventListener('input', handleDOMSignalEvent);
+    targetRoot.addEventListener('click', handleButtonBlur, true);
+    targetRoot.addEventListener('pointerup', handleButtonBlur, true);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', handleGameKeys, { passive: false, capture: true });
+    }
   }
 
   /**
