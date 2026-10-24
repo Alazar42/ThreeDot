@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Container,
   Typography,
   Box,
   Tabs,
@@ -293,7 +292,7 @@ onUnmounted(() => {
   ];
 
   return (
-    <Container maxWidth="md" sx={{ py: 6 }}>
+    <Box sx={{ width: '100%', px: { xs: 2, sm: 4, md: 6 }, py: 6 }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="overline" sx={{ fontWeight: 700, color: 'text.secondary' }}>
           UI INTEGRATION
@@ -389,6 +388,6 @@ onUnmounted(() => {
           </Typography>
         </CardContent>
       </Card>
-    </Container>
+    </Box>
   );
 };

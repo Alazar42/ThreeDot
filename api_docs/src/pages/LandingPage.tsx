@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Box,
-  Container,
   Typography,
   Button,
   Card,
@@ -293,7 +292,7 @@ engine.sceneTree.root.addChild(new RotatingPlayer());`,
               : 'radial-gradient(ellipse at 50% 0%, #f0f0f0 0%, #ffffff 70%)',
         }}
       >
-        <Container maxWidth="md">
+        <Box sx={{ width: '100%', px: { xs: 2, sm: 4, md: 6 }, maxWidth: '1440px', mx: 'auto' }}>
           {/* Logo */}
           <Box
             component="img"
@@ -444,12 +443,12 @@ engine.sceneTree.root.addChild(new RotatingPlayer());`,
               Architecture Guide
             </Button>
           </Box>
-        </Container>
+        </Box>
       </Box>
 
 
       {/* Framework Support Tabs Section */}
-      <Container maxWidth="lg" sx={{ mt: 8 }}>
+      <Box sx={{ width: '100%', px: { xs: 2, sm: 4, md: 6 }, mt: 8 }}>
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Typography variant="h4" sx={{ fontWeight: 800 }}>
             Works with Any UI Framework
@@ -487,10 +486,10 @@ engine.sceneTree.root.addChild(new RotatingPlayer());`,
           language="typescript"
           title={`${frameworkExamples[frameworkTab].name} Integration Example`}
         />
-      </Container>
+      </Box>
 
       {/* Feature Highlights Grid */}
-      <Container maxWidth="lg" sx={{ mt: 10 }}>
+      <Box sx={{ width: '100%', px: { xs: 2, sm: 4, md: 6 }, mt: 10, mb: 10 }}>
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography variant="h4" sx={{ fontWeight: 800 }}>
             Engine Features at a Glance
@@ -545,7 +544,7 @@ engine.sceneTree.root.addChild(new RotatingPlayer());`,
             </Card>
           ))}
         </Box>
-      </Container>
+      </Box>
     </Box>
   );
 };

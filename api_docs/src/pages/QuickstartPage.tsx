@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Container,
   Typography,
   Box,
   Paper,
@@ -59,7 +58,7 @@ npm install -D vite typescript`,
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
+    <Box sx={{ width: '100%', px: { xs: 2, sm: 4, md: 6 }, py: 6 }}>
       {/* Header */}
       <Box sx={{ mb: 6 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
@@ -591,6 +590,6 @@ hero.jump(15);`}
           bridge trigger in real time!
         </Typography>
       </Paper>
-    </Container>
+    </Box>
   );
 };

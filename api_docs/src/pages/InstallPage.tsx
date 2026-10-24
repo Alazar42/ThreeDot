@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Container,
   Typography,
   Box,
   Tabs,
@@ -88,7 +87,7 @@ engine.sceneTree.root.addChild(cube);
 console.log('[ThreeDot] Engine mounted and running');`;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
+    <Box sx={{ width: '100%', px: { xs: 2, sm: 4, md: 6 }, py: 6 }}>
       {/* Page Header */}
       <Box sx={{ mb: 6 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
@@ -248,6 +247,6 @@ console.log('[ThreeDot] Engine mounted and running');`;
           title="src/main.ts (Verification)"
         />
       </Paper>
-    </Container>
+    </Box>
   );
 };

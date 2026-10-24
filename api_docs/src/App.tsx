@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Container } from '@mui/material';
+import { Box } from '@mui/material';
 import { allClasses, categoryGroups, getClassDoc } from './data';
 import { Navbar, type NavTab } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
@@ -100,15 +100,15 @@ export const App: React.FC = () => {
         onOpenSearch={() => setIsSearchOpen(true)}
       />
 
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%' }}>
         {currentTab === 'home' && <LandingPage onNavigate={handleSelectTab} />}
         {currentTab === 'install' && <InstallPage />}
         {currentTab === 'frameworks' && <FrameworksPage />}
         {currentTab === 'quickstart' && <QuickstartPage />}
         {currentTab === 'architecture' && (
-          <Container maxWidth="lg" sx={{ py: 6 }}>
+          <Box sx={{ width: '100%', px: { xs: 2, sm: 4, md: 6 }, py: 6 }}>
             <ArchitectureGuide onNavigateClass={handleSelectClass} />
-          </Container>
+          </Box>
         )}
         {currentTab === 'api' && (
           <div className="docs-body-layout" style={{ flex: 1, height: 'calc(100vh - 60px)' }}>
