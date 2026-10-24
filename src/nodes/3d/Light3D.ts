@@ -4,6 +4,25 @@
 
 import * as THREE from 'three';
 import { Node3D, Node3DOptions } from './Node3D';
+function parseLightArgs<T extends Node3DOptions & { color?: THREE.ColorRepresentation; intensity?: number }>(
+  arg1?: string | number | T,
+  arg2?: number | T
+): T {
+  if (typeof arg1 === 'number') {
+    return {
+      color: arg1,
+      intensity: typeof arg2 === 'number' ? arg2 : (arg2 as any)?.intensity,
+      ...(typeof arg2 === 'object' && arg2 !== null ? arg2 : {}),
+    } as T;
+  }
+  if (typeof arg1 === 'string') {
+    if (typeof arg2 === 'number') {
+      return { name: arg1, intensity: arg2 } as T;
+    }
+    return { ...(arg2 ?? {}), name: arg1 } as T;
+  }
+  return (arg1 ?? {}) as T;
+}
 
 // ── DirectionalLight3D ──
 
@@ -18,25 +37,16 @@ export class DirectionalLight3D extends Node3D {
   private _light: THREE.DirectionalLight;
 
   constructor(
-    nameOrOptions?: string | DirectionalLight3DOptions,
+    nameOrColorOrOptions?: string | number | DirectionalLight3DOptions,
     intensityOrOptions?: number | DirectionalLight3DOptions
   ) {
-    let opts: DirectionalLight3DOptions | undefined;
-    if (typeof nameOrOptions === 'string') {
-      if (typeof intensityOrOptions === 'number') {
-        opts = { name: nameOrOptions, intensity: intensityOrOptions };
-      } else {
-        opts = { ...(intensityOrOptions ?? {}), name: nameOrOptions };
-      }
-    } else {
-      opts = nameOrOptions;
-    }
+    const opts = parseLightArgs<DirectionalLight3DOptions>(nameOrColorOrOptions, intensityOrOptions);
     super(opts);
     this._light = this.object3D as THREE.DirectionalLight;
-    if (opts?.color !== undefined) this._light.color.set(opts.color);
-    if (opts?.intensity !== undefined) this._light.intensity = opts.intensity;
-    if (opts?.castShadow !== undefined) this._light.castShadow = opts.castShadow;
-    if (opts?.shadowMapSize !== undefined) {
+    if (opts.color !== undefined) this._light.color.set(opts.color);
+    if (opts.intensity !== undefined) this._light.intensity = opts.intensity;
+    if (opts.castShadow !== undefined) this._light.castShadow = opts.castShadow;
+    if (opts.shadowMapSize !== undefined) {
       this._light.shadow.mapSize.setScalar(opts.shadowMapSize);
     }
   }
@@ -49,6 +59,8 @@ export class DirectionalLight3D extends Node3D {
   get color(): THREE.Color { return this._light.color; }
   get intensity(): number { return this._light.intensity; }
   set intensity(v: number) { this._light.intensity = v; }
+  get castShadow(): boolean { return this._light.castShadow; }
+  set castShadow(v: boolean) { this._light.castShadow = v; }
 }
 
 // ── PointLight3D ──
@@ -64,14 +76,18 @@ export interface PointLight3DOptions extends Node3DOptions {
 export class PointLight3D extends Node3D {
   private _light: THREE.PointLight;
 
-  constructor(options?: PointLight3DOptions) {
-    super(options);
+  constructor(
+    nameOrColorOrOptions?: string | number | PointLight3DOptions,
+    intensityOrOptions?: number | PointLight3DOptions
+  ) {
+    const opts = parseLightArgs<PointLight3DOptions>(nameOrColorOrOptions, intensityOrOptions);
+    super(opts);
     this._light = this.object3D as THREE.PointLight;
-    if (options?.color !== undefined) this._light.color.set(options.color);
-    if (options?.intensity !== undefined) this._light.intensity = options.intensity;
-    if (options?.distance !== undefined) this._light.distance = options.distance;
-    if (options?.decay !== undefined) this._light.decay = options.decay;
-    if (options?.castShadow !== undefined) this._light.castShadow = options.castShadow;
+    if (opts.color !== undefined) this._light.color.set(opts.color);
+    if (opts.intensity !== undefined) this._light.intensity = opts.intensity;
+    if (opts.distance !== undefined) this._light.distance = opts.distance;
+    if (opts.decay !== undefined) this._light.decay = opts.decay;
+    if (opts.castShadow !== undefined) this._light.castShadow = opts.castShadow;
   }
 
   protected override _createObject3D(): THREE.Object3D {
@@ -84,6 +100,8 @@ export class PointLight3D extends Node3D {
   set intensity(v: number) { this._light.intensity = v; }
   get distance(): number { return this._light.distance; }
   set distance(v: number) { this._light.distance = v; }
+  get castShadow(): boolean { return this._light.castShadow; }
+  set castShadow(v: boolean) { this._light.castShadow = v; }
 }
 
 // ── SpotLight3D ──
@@ -101,16 +119,20 @@ export interface SpotLight3DOptions extends Node3DOptions {
 export class SpotLight3D extends Node3D {
   private _light: THREE.SpotLight;
 
-  constructor(options?: SpotLight3DOptions) {
-    super(options);
+  constructor(
+    nameOrColorOrOptions?: string | number | SpotLight3DOptions,
+    intensityOrOptions?: number | SpotLight3DOptions
+  ) {
+    const opts = parseLightArgs<SpotLight3DOptions>(nameOrColorOrOptions, intensityOrOptions);
+    super(opts);
     this._light = this.object3D as THREE.SpotLight;
-    if (options?.color !== undefined) this._light.color.set(options.color);
-    if (options?.intensity !== undefined) this._light.intensity = options.intensity;
-    if (options?.distance !== undefined) this._light.distance = options.distance;
-    if (options?.angle !== undefined) this._light.angle = options.angle;
-    if (options?.penumbra !== undefined) this._light.penumbra = options.penumbra;
-    if (options?.decay !== undefined) this._light.decay = options.decay;
-    if (options?.castShadow !== undefined) this._light.castShadow = options.castShadow;
+    if (opts.color !== undefined) this._light.color.set(opts.color);
+    if (opts.intensity !== undefined) this._light.intensity = opts.intensity;
+    if (opts.distance !== undefined) this._light.distance = opts.distance;
+    if (opts.angle !== undefined) this._light.angle = opts.angle;
+    if (opts.penumbra !== undefined) this._light.penumbra = opts.penumbra;
+    if (opts.decay !== undefined) this._light.decay = opts.decay;
+    if (opts.castShadow !== undefined) this._light.castShadow = opts.castShadow;
   }
 
   protected override _createObject3D(): THREE.Object3D {
@@ -125,6 +147,8 @@ export class SpotLight3D extends Node3D {
   set angle(v: number) { this._light.angle = v; }
   get penumbra(): number { return this._light.penumbra; }
   set penumbra(v: number) { this._light.penumbra = v; }
+  get castShadow(): boolean { return this._light.castShadow; }
+  set castShadow(v: boolean) { this._light.castShadow = v; }
 }
 
 // ── AmbientLight3D ──
@@ -138,27 +162,18 @@ export class AmbientLight3D extends Node3D {
   private _light: THREE.AmbientLight;
 
   constructor(
-    nameOrOptions?: string | AmbientLight3DOptions,
+    nameOrColorOrOptions?: string | number | AmbientLight3DOptions,
     intensityOrOptions?: number | AmbientLight3DOptions
   ) {
-    let opts: AmbientLight3DOptions | undefined;
-    if (typeof nameOrOptions === 'string') {
-      if (typeof intensityOrOptions === 'number') {
-        opts = { name: nameOrOptions, intensity: intensityOrOptions };
-      } else {
-        opts = { ...(intensityOrOptions ?? {}), name: nameOrOptions };
-      }
-    } else {
-      opts = nameOrOptions;
-    }
+    const opts = parseLightArgs<AmbientLight3DOptions>(nameOrColorOrOptions, intensityOrOptions);
     super(opts);
     this._light = this.object3D as THREE.AmbientLight;
-    if (opts?.color !== undefined) this._light.color.set(opts.color);
-    if (opts?.intensity !== undefined) this._light.intensity = opts.intensity;
+    if (opts.color !== undefined) this._light.color.set(opts.color);
+    if (opts.intensity !== undefined) this._light.intensity = opts.intensity;
   }
 
   protected override _createObject3D(): THREE.Object3D {
-    return new THREE.AmbientLight(0xffffff, 0.4);
+    return new THREE.AmbientLight(0xffffff, 1);
   }
 
   get light(): THREE.AmbientLight { return this._light; }

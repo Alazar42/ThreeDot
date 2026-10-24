@@ -11,6 +11,8 @@ export interface Camera3DOptions extends Node3DOptions {
   far?: number;
   orthographic?: boolean;
   orthographicSize?: number;
+  current?: boolean;
+  makeCurrent?: boolean;
 }
 
 /**
@@ -19,12 +21,21 @@ export interface Camera3DOptions extends Node3DOptions {
 export class Camera3D extends Node3D {
   private _threeCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   private _isOrthographic: boolean;
+  private _current: boolean;
 
   constructor(options?: Camera3DOptions | string) {
     const opts: Camera3DOptions | undefined =
       typeof options === 'string' ? { name: options } : options;
     super(opts);
     this._isOrthographic = opts?.orthographic ?? false;
+    this._current = opts?.makeCurrent ?? opts?.current ?? true;
+
+    // Automatically make active viewport camera when entering scene tree
+    this.treeEntered.connect(() => {
+      if (this._current) {
+        this.makeCurrent();
+      }
+    });
 
     if (this._isOrthographic) {
       const size = opts?.orthographicSize ?? 10;

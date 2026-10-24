@@ -77,7 +77,7 @@ class SignalBusManager {
    */
   initDOMBridge(root?: HTMLElement | Document | null): void {
     if (typeof window === 'undefined') return;
-    const targetRoot = root ?? (typeof document !== 'undefined' ? document : null);
+    const targetRoot = typeof document !== 'undefined' ? document : root;
     if (!targetRoot || this.domBridgeInitialized) return;
     this.domBridgeInitialized = true;
 

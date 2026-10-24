@@ -40,6 +40,15 @@ export class Node3D extends Node {
     this.object3D = this._createObject3D();
     this.object3D.name = this.name;
 
+    // Guaranteed Three.js hierarchy sync on tree entry/exit,
+    // ensuring nodes attach even if subclasses override _enterTree without super._enterTree()
+    this.treeEntered.connect(() => {
+      this._attachToThreeParent();
+    });
+    this.treeExited.connect(() => {
+      this._detachFromThreeParent();
+    });
+
     if (opts?.position) {
       const p = opts.position;
       this.object3D.position.set(
