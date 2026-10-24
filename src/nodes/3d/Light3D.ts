@@ -17,14 +17,27 @@ export interface DirectionalLight3DOptions extends Node3DOptions {
 export class DirectionalLight3D extends Node3D {
   private _light: THREE.DirectionalLight;
 
-  constructor(options?: DirectionalLight3DOptions) {
-    super(options);
+  constructor(
+    nameOrOptions?: string | DirectionalLight3DOptions,
+    intensityOrOptions?: number | DirectionalLight3DOptions
+  ) {
+    let opts: DirectionalLight3DOptions | undefined;
+    if (typeof nameOrOptions === 'string') {
+      if (typeof intensityOrOptions === 'number') {
+        opts = { name: nameOrOptions, intensity: intensityOrOptions };
+      } else {
+        opts = { ...(intensityOrOptions ?? {}), name: nameOrOptions };
+      }
+    } else {
+      opts = nameOrOptions;
+    }
+    super(opts);
     this._light = this.object3D as THREE.DirectionalLight;
-    if (options?.color !== undefined) this._light.color.set(options.color);
-    if (options?.intensity !== undefined) this._light.intensity = options.intensity;
-    if (options?.castShadow !== undefined) this._light.castShadow = options.castShadow;
-    if (options?.shadowMapSize !== undefined) {
-      this._light.shadow.mapSize.setScalar(options.shadowMapSize);
+    if (opts?.color !== undefined) this._light.color.set(opts.color);
+    if (opts?.intensity !== undefined) this._light.intensity = opts.intensity;
+    if (opts?.castShadow !== undefined) this._light.castShadow = opts.castShadow;
+    if (opts?.shadowMapSize !== undefined) {
+      this._light.shadow.mapSize.setScalar(opts.shadowMapSize);
     }
   }
 
@@ -124,11 +137,24 @@ export interface AmbientLight3DOptions extends Node3DOptions {
 export class AmbientLight3D extends Node3D {
   private _light: THREE.AmbientLight;
 
-  constructor(options?: AmbientLight3DOptions) {
-    super(options);
+  constructor(
+    nameOrOptions?: string | AmbientLight3DOptions,
+    intensityOrOptions?: number | AmbientLight3DOptions
+  ) {
+    let opts: AmbientLight3DOptions | undefined;
+    if (typeof nameOrOptions === 'string') {
+      if (typeof intensityOrOptions === 'number') {
+        opts = { name: nameOrOptions, intensity: intensityOrOptions };
+      } else {
+        opts = { ...(intensityOrOptions ?? {}), name: nameOrOptions };
+      }
+    } else {
+      opts = nameOrOptions;
+    }
+    super(opts);
     this._light = this.object3D as THREE.AmbientLight;
-    if (options?.color !== undefined) this._light.color.set(options.color);
-    if (options?.intensity !== undefined) this._light.intensity = options.intensity;
+    if (opts?.color !== undefined) this._light.color.set(opts.color);
+    if (opts?.intensity !== undefined) this._light.intensity = opts.intensity;
   }
 
   protected override _createObject3D(): THREE.Object3D {

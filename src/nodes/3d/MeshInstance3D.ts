@@ -39,12 +39,16 @@ export interface MeshInstance3DOptions extends Node3DOptions {
 export class MeshInstance3D extends Node3D {
   private _mesh: THREE.Mesh;
 
-  constructor(options?: MeshInstance3DOptions) {
-    super(options);
+  constructor(nameOrOptions?: string | MeshInstance3DOptions, options?: MeshInstance3DOptions) {
+    const opts: MeshInstance3DOptions | undefined =
+      typeof nameOrOptions === 'string'
+        ? { ...(options ?? {}), name: nameOrOptions }
+        : nameOrOptions;
+    super(opts);
     this._mesh = this.object3D as THREE.Mesh;
 
-    if (typeof options?.geometry === 'string') {
-      switch (options.geometry.toLowerCase()) {
+    if (typeof opts?.geometry === 'string') {
+      switch (opts.geometry.toLowerCase()) {
         case 'box':
         case 'cube':
           this._mesh.geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -71,22 +75,22 @@ export class MeshInstance3D extends Node3D {
           this._mesh.geometry = new THREE.BoxGeometry(1, 1, 1);
           break;
       }
-    } else if (options?.geometry) {
-      this._mesh.geometry = options.geometry;
+    } else if (opts?.geometry) {
+      this._mesh.geometry = opts.geometry;
     }
 
-    if (options?.material) {
-      if (options.material instanceof THREE.Material || Array.isArray(options.material)) {
-        this._mesh.material = options.material;
+    if (opts?.material) {
+      if (opts.material instanceof THREE.Material || Array.isArray(opts.material)) {
+        this._mesh.material = opts.material;
       } else {
-        this._mesh.material = new THREE.MeshStandardMaterial(options.material);
+        this._mesh.material = new THREE.MeshStandardMaterial(opts.material);
       }
     }
-    if (options?.castShadow !== undefined) {
-      this._mesh.castShadow = options.castShadow;
+    if (opts?.castShadow !== undefined) {
+      this._mesh.castShadow = opts.castShadow;
     }
-    if (options?.receiveShadow !== undefined) {
-      this._mesh.receiveShadow = options.receiveShadow;
+    if (opts?.receiveShadow !== undefined) {
+      this._mesh.receiveShadow = opts.receiveShadow;
     }
   }
 

@@ -92,11 +92,12 @@ export class Node {
   /** Emitted when this node is renamed */
   readonly renamed = new Signal<[string]>('renamed');
 
-  constructor(options?: NodeOptions) {
+  constructor(options?: NodeOptions | string) {
     this.id = nextNodeId++;
-    this.name = options?.name ?? this.constructor.name;
-    this.processMode = options?.processMode ?? ProcessMode.Inherit;
-    this.processPriority = options?.processPriority ?? 0;
+    const opts = typeof options === 'string' ? { name: options } : options;
+    this.name = opts?.name ?? this.constructor.name;
+    this.processMode = opts?.processMode ?? ProcessMode.Inherit;
+    this.processPriority = opts?.processPriority ?? 0;
   }
 
   // ── Lifecycle State ──

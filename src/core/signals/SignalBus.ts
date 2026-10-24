@@ -36,6 +36,29 @@ class SignalBusManager {
   }
 
   /**
+   * Alias for connect.
+   */
+  on<T extends unknown[] = any[]>(name: string, listener: SignalListener<T>): () => void {
+    return this.connect<T>(name, listener);
+  }
+
+  /**
+   * Disconnect a listener from a global signal by name.
+   */
+  disconnect<T extends unknown[] = any[]>(name: string, listener: SignalListener<T>): void {
+    if (this.signals.has(name)) {
+      this.signals.get(name)!.disconnect(listener);
+    }
+  }
+
+  /**
+   * Alias for disconnect.
+   */
+  off<T extends unknown[] = any[]>(name: string, listener: SignalListener<T>): void {
+    this.disconnect<T>(name, listener);
+  }
+
+  /**
    * Check if a signal with the given name has active listeners.
    */
   hasListeners(name: string): boolean {

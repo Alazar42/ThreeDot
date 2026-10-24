@@ -34,38 +34,39 @@ export class Node3D extends Node {
   /** Whether this node should be visible */
   private _visible = true;
 
-  constructor(options?: Node3DOptions) {
-    super(options);
+  constructor(options?: Node3DOptions | string) {
+    const opts = typeof options === 'string' ? { name: options } : options;
+    super(opts);
     this.object3D = this._createObject3D();
     this.object3D.name = this.name;
 
-    if (options?.position) {
-      const p = options.position;
+    if (opts?.position) {
+      const p = opts.position;
       this.object3D.position.set(
         'x' in p ? p.x : 0,
         'y' in p ? p.y : 0,
         'z' in p ? p.z : 0
       );
     }
-    if (options?.rotation) {
-      const r = options.rotation;
+    if (opts?.rotation) {
+      const r = opts.rotation;
       if (r instanceof THREE.Euler) {
         this.object3D.rotation.copy(r);
       } else {
         this.object3D.rotation.set(r.x, r.y, r.z);
       }
     }
-    if (options?.scale) {
-      const s = options.scale;
+    if (opts?.scale) {
+      const s = opts.scale;
       this.object3D.scale.set(
         'x' in s ? s.x : 1,
         'y' in s ? s.y : 1,
         'z' in s ? s.z : 1
       );
     }
-    if (options?.visible !== undefined) {
-      this._visible = options.visible;
-      this.object3D.visible = options.visible;
+    if (opts?.visible !== undefined) {
+      this._visible = opts.visible;
+      this.object3D.visible = opts.visible;
     }
   }
 
@@ -178,12 +179,22 @@ export class Node3D extends Node {
 
   /**
    * Make this node look at a target position.
+   * Supports:
+   *   lookAt(x, y, z)
+   *   lookAt(vector3)
+   *   lookAt({ x, y, z })
    */
-  lookAt(target: THREE.Vector3 | { x: number; y: number; z: number }): void {
-    if (target instanceof THREE.Vector3) {
-      this.object3D.lookAt(target);
-    } else {
-      this.object3D.lookAt(target.x, target.y, target.z);
+  lookAt(
+    targetOrX: THREE.Vector3 | { x: number; y: number; z: number } | number,
+    y?: number,
+    z?: number
+  ): void {
+    if (typeof targetOrX === 'number') {
+      this.object3D.lookAt(targetOrX, y ?? 0, z ?? 0);
+    } else if (targetOrX instanceof THREE.Vector3) {
+      this.object3D.lookAt(targetOrX);
+    } else if (targetOrX && typeof targetOrX === 'object' && 'x' in targetOrX) {
+      this.object3D.lookAt(targetOrX.x, targetOrX.y, targetOrX.z);
     }
   }
 

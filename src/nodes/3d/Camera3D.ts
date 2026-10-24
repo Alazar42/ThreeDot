@@ -20,26 +20,28 @@ export class Camera3D extends Node3D {
   private _threeCamera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
   private _isOrthographic: boolean;
 
-  constructor(options?: Camera3DOptions) {
-    super(options);
-    this._isOrthographic = options?.orthographic ?? false;
+  constructor(options?: Camera3DOptions | string) {
+    const opts: Camera3DOptions | undefined =
+      typeof options === 'string' ? { name: options } : options;
+    super(opts);
+    this._isOrthographic = opts?.orthographic ?? false;
 
     if (this._isOrthographic) {
-      const size = options?.orthographicSize ?? 10;
+      const size = opts?.orthographicSize ?? 10;
       this._threeCamera = new THREE.OrthographicCamera(
         -size,
         size,
         size,
         -size,
-        options?.near ?? 0.1,
-        options?.far ?? 1000
+        opts?.near ?? 0.1,
+        opts?.far ?? 1000
       );
     } else {
       this._threeCamera = new THREE.PerspectiveCamera(
-        options?.fov ?? 75,
+        opts?.fov ?? 75,
         1, // Will be updated by engine
-        options?.near ?? 0.1,
-        options?.far ?? 1000
+        opts?.near ?? 0.1,
+        opts?.far ?? 1000
       );
     }
 
@@ -47,24 +49,24 @@ export class Camera3D extends Node3D {
     this.object3D = this._threeCamera;
 
     // Apply any initial transforms from options to the camera
-    if (options?.position) {
-      const p = options.position;
+    if (opts?.position) {
+      const p = opts.position;
       this.object3D.position.set(
         'x' in p ? p.x : 0,
         'y' in p ? p.y : 0,
         'z' in p ? p.z : 0
       );
     }
-    if (options?.rotation) {
-      const r = options.rotation;
+    if (opts?.rotation) {
+      const r = opts.rotation;
       this.object3D.rotation.set(
         'x' in r ? r.x : 0,
         'y' in r ? r.y : 0,
         'z' in r ? r.z : 0
       );
     }
-    if (options?.scale) {
-      const s = options.scale;
+    if (opts?.scale) {
+      const s = opts.scale;
       this.object3D.scale.set(
         'x' in s ? s.x : 1,
         'y' in s ? s.y : 1,

@@ -97,4 +97,34 @@ describe('3D Node System', () => {
     expect(pointLight.light.distance).toBe(25);
     expect(pointLight.light.decay).toBe(2);
   });
+
+  it('supports lookAt with coordinates, object literal, or Vector3', () => {
+    const cam = new Camera3D('MainCam');
+    cam.position.set(0, 5, 10);
+
+    // 1. Triple numbers (x, y, z)
+    expect(() => cam.lookAt(0, 0, 0)).not.toThrow();
+
+    // 2. Object literal { x, y, z }
+    expect(() => cam.lookAt({ x: 1, y: 2, z: 3 })).not.toThrow();
+
+    // 3. Three.js Vector3
+    expect(() => cam.lookAt(new THREE.Vector3(0, 0, 0))).not.toThrow();
+  });
+
+  it('supports string name arguments in 3D constructors', () => {
+    const node = new Node3D('MyWorld');
+    expect(node.name).toBe('MyWorld');
+
+    const cam = new Camera3D('PlayerCamera');
+    expect(cam.name).toBe('PlayerCamera');
+
+    const mesh = new MeshInstance3D('HeroCube', { geometry: 'box' });
+    expect(mesh.name).toBe('HeroCube');
+    expect(mesh.geometry).toBeInstanceOf(THREE.BoxGeometry);
+
+    const dirLight = new DirectionalLight3D('SunLight', 3.0);
+    expect(dirLight.name).toBe('SunLight');
+    expect(dirLight.intensity).toBe(3.0);
+  });
 });
