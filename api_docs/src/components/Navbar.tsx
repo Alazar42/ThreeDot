@@ -266,7 +266,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <IconButton
               size="small"
               component="a"
-              href="https://github.com"
+              href="https://github.com/Alazar42/ThreeDot"
               target="_blank"
               rel="noopener noreferrer"
               sx={{
