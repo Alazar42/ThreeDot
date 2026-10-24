@@ -24,6 +24,17 @@ export const QuickstartPage: React.FC = () => {
 
   const scaffoldOptions = [
     {
+      name: 'Instant (curl / wget)',
+      cmd: `# 1. Scaffold a complete ready-to-run game project with one command:
+curl -fsSL https://raw.githubusercontent.com/Alazar42/ThreeDot/master/install.sh | bash -s -- my-threedot-game
+
+# 2. Enter project folder
+cd my-threedot-game
+
+# 3. Start development server
+npm run dev`,
+    },
+    {
       name: 'Vite Vanilla TypeScript',
       cmd: `# 1. Create a fresh Vite TypeScript project
 npm create vite@latest my-threedot-game -- --template vanilla-ts

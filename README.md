@@ -49,8 +49,27 @@ Three.js is an extraordinary rendering engine, but it intentionally focuses on t
 
 Install ThreeDot into your project. ThreeDot bundles and re-exports all required math, geometries, materials, and shaders, so you only ever install a single package:
 
+### 1. Instant Setup (curl / wget)
+
+Install ThreeDot directly into an existing project or scaffold a fresh game with one command:
+
+```bash
+# In an existing project:
+curl -fsSL https://raw.githubusercontent.com/Alazar42/ThreeDot/master/install.sh | bash
+
+# Or with wget:
+wget -qO- https://raw.githubusercontent.com/Alazar42/ThreeDot/master/install.sh | bash
+
+# Or scaffold a new game project:
+curl -fsSL https://raw.githubusercontent.com/Alazar42/ThreeDot/master/install.sh | bash -s -- my-game
+```
+
+### 2. Package Manager
+
 ```bash
 npm install threedot
+# or with direct release tarball:
+npm install https://github.com/Alazar42/ThreeDot/raw/master/packages/threedot-0.1.0.tgz
 ```
 
 Or with pnpm, yarn, or bun:

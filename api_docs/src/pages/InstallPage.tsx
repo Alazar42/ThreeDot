@@ -21,7 +21,9 @@ export const InstallPage: React.FC = () => {
   const [pmTab, setPmTab] = useState(0);
 
   const pmCommands = [
+    { name: 'curl / wget', cmd: 'curl -fsSL https://raw.githubusercontent.com/Alazar42/ThreeDot/master/install.sh | bash' },
     { name: 'npm', cmd: 'npm install threedot' },
+    { name: 'Direct Tarball', cmd: 'npm install https://github.com/Alazar42/ThreeDot/raw/master/packages/threedot-0.1.0.tgz' },
     { name: 'pnpm', cmd: 'pnpm add threedot' },
     { name: 'yarn', cmd: 'yarn add threedot' },
     { name: 'bun', cmd: 'bun add threedot' },
