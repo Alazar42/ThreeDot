@@ -8,6 +8,8 @@ import {
   Chip,
   Card,
   CardContent,
+  Button,
+  ButtonGroup,
 } from '@mui/material';
 import PlayCircleOutlinedIcon from '@mui/icons-material/PlayCircleOutlined';
 import TerminalOutlinedIcon from '@mui/icons-material/TerminalOutlined';
@@ -19,10 +21,14 @@ import LayersOutlinedIcon from '@mui/icons-material/LayersOutlined';
 import WebOutlinedIcon from '@mui/icons-material/WebOutlined';
 import { CodeBlock } from '../components/CodeBlock';
 
-export const QuickstartPage: React.FC = () => {
-  const [scaffoldTab, setScaffoldTab] = useState(0);
+type Framework = 'vanilla' | 'react';
 
-  const scaffoldOptions = [
+export const QuickstartPage: React.FC = () => {
+  const [framework, setFramework] = useState<Framework>('vanilla');
+  const [vanillaScaffoldTab, setVanillaScaffoldTab] = useState(0);
+  const [reactScaffoldTab, setReactScaffoldTab] = useState(0);
+
+  const vanillaScaffoldOptions = [
     {
       name: 'Instant (curl / wget)',
       cmd: `# 1. Scaffold a complete ready-to-run game project with one command:
@@ -43,18 +49,10 @@ npm create vite@latest my-threedot-game -- --template vanilla-ts
 cd my-threedot-game
 
 # 3. Install ThreeDot (Only threedot is required!)
-npm install threedot`,
-    },
-    {
-      name: 'Vite React TypeScript',
-      cmd: `# 1. Create a fresh React TypeScript project
-npm create vite@latest my-threedot-game -- --template react-ts
+npm install threedot
 
-# 2. Enter project folder
-cd my-threedot-game
-
-# 3. Install ThreeDot
-npm install threedot`,
+# 4. Start development server
+npm run dev`,
     },
     {
       name: 'Manual npm init',
@@ -64,7 +62,40 @@ npm init -y
 
 # 2. Install ThreeDot and development tools
 npm install threedot
-npm install -D vite typescript`,
+npm install -D vite typescript
+
+# 3. Start development server
+npx vite`,
+    },
+  ];
+
+  const reactScaffoldOptions = [
+    {
+      name: 'Vite React TypeScript',
+      cmd: `# 1. Create a fresh React TypeScript project with Vite
+npm create vite@latest my-threedot-game -- --template react-ts
+
+# 2. Enter project folder
+cd my-threedot-game
+
+# 3. Install ThreeDot (Only threedot is required!)
+npm install threedot
+
+# 4. Start development server
+npm run dev`,
+    },
+    {
+      name: 'Manual React Setup',
+      cmd: `# 1. Create empty directory and initialize
+mkdir my-threedot-game && cd my-threedot-game
+npm init -y
+
+# 2. Install React and ThreeDot
+npm install react react-dom threedot
+npm install -D vite @vitejs/plugin-react typescript @types/react @types/react-dom
+
+# 3. Start development server
+npx vite`,
     },
   ];
 
@@ -78,14 +109,66 @@ npm install -D vite typescript`,
             Quickstart Guide
           </Typography>
         </Box>
-        <Typography variant="subtitle1" color="text.secondary" sx={{ maxWidth: 850, mb: 2.5, lineHeight: 1.7 }}>
+        <Typography variant="subtitle1" color="text.secondary" sx={{ maxWidth: 850, mb: 3, lineHeight: 1.7 }}>
           Learn how to start a web 3D project from terminal scaffolding to an interactive, signal-driven
           game with HTML HUD controls. No Three.js boilerplate, zero external math dependencies, and
           seamless integration between imperative TypeScript game logic, JSX, and HTML.
         </Typography>
+
+        {/* Framework Switcher */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            gap: 2,
+            mb: 3,
+            p: 2,
+            borderRadius: 2,
+            border: '1px solid',
+            borderColor: 'divider',
+            backgroundColor: (theme) => (theme.palette.mode === 'dark' ? '#141414' : '#f7f7f7'),
+          }}
+        >
+          <Typography variant="body2" sx={{ fontWeight: 700, letterSpacing: '0.04em' }}>
+            SELECT FRAMEWORK ARCHITECTURE:
+          </Typography>
+          <ButtonGroup variant="outlined" size="small">
+            <Button
+              onClick={() => setFramework('vanilla')}
+              variant={framework === 'vanilla' ? 'contained' : 'outlined'}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '13px',
+                px: 2.5,
+              }}
+            >
+              Vanilla TypeScript
+            </Button>
+            <Button
+              onClick={() => setFramework('react')}
+              variant={framework === 'react' ? 'contained' : 'outlined'}
+              sx={{
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: '13px',
+                px: 2.5,
+              }}
+            >
+              React + TypeScript
+            </Button>
+          </ButtonGroup>
+        </Box>
+
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
           <Chip label="Zero-THREE Imports" size="small" variant="outlined" />
-          <Chip label="Terminal Scaffolding" size="small" variant="outlined" />
+          <Chip
+            label={framework === 'vanilla' ? 'Mode: Vanilla TypeScript' : 'Mode: React + TypeScript'}
+            size="small"
+            color="primary"
+            variant="outlined"
+          />
           <Chip label="threedot-signal DOM Binding" size="small" variant="outlined" />
           <Chip label="JSX & Imperative Parity" size="small" variant="outlined" />
         </Box>
@@ -105,22 +188,29 @@ npm install -D vite typescript`,
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
           <TerminalOutlinedIcon fontSize="small" />
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Step 1: Scaffold Your Project from the Terminal
+            Step 1: Scaffold Your Project ({framework === 'vanilla' ? 'Vanilla TypeScript' : 'React + TypeScript'})
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Starting a Node/Vite project can feel daunting. Choose your preferred scaffolding template below.
-          Notice that you only install <code>threedot</code>—never <code>three</code> or <code>@types/three</code>:
+          {framework === 'vanilla'
+            ? 'Scaffold a pure Vanilla TypeScript project using Vite or the one-line installer. Notice that only threedot is installed—never three or @types/three:'
+            : 'Scaffold a modern React + TypeScript project with Vite. Notice that only threedot is installed alongside React—never three or @types/three:'}
         </Typography>
 
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
           <Tabs
-            value={scaffoldTab}
-            onChange={(_, val) => setScaffoldTab(val)}
+            value={framework === 'vanilla' ? vanillaScaffoldTab : reactScaffoldTab}
+            onChange={(_, val) => {
+              if (framework === 'vanilla') {
+                setVanillaScaffoldTab(val);
+              } else {
+                setReactScaffoldTab(val);
+              }
+            }}
             textColor="inherit"
             TabIndicatorProps={{ sx: { backgroundColor: 'text.primary', height: 2 } }}
           >
-            {scaffoldOptions.map((opt, idx) => (
+            {(framework === 'vanilla' ? vanillaScaffoldOptions : reactScaffoldOptions).map((opt, idx) => (
               <Tab
                 key={opt.name}
                 label={opt.name}
@@ -128,7 +218,7 @@ npm install -D vite typescript`,
                   fontWeight: 600,
                   fontSize: '13px',
                   textTransform: 'none',
-                  opacity: scaffoldTab === idx ? 1 : 0.6,
+                  opacity: (framework === 'vanilla' ? vanillaScaffoldTab : reactScaffoldTab) === idx ? 1 : 0.6,
                 }}
               />
             ))}
@@ -136,13 +226,17 @@ npm install -D vite typescript`,
         </Box>
 
         <CodeBlock
-          code={scaffoldOptions[scaffoldTab].cmd}
+          code={
+            framework === 'vanilla'
+              ? vanillaScaffoldOptions[vanillaScaffoldTab].cmd
+              : reactScaffoldOptions[reactScaffoldTab].cmd
+          }
           language="bash"
-          title="Terminal (Step 1)"
+          title={`Terminal — ${framework === 'vanilla' ? 'Vanilla Scaffolding' : 'React Scaffolding'}`}
         />
       </Paper>
 
-      {/* Step 2: Project File Tree */}
+      {/* Step 2: Project File Structure */}
       <Paper
         elevation={0}
         sx={{
@@ -156,29 +250,93 @@ npm install -D vite typescript`,
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
           <FolderTreeOutlinedIcon fontSize="small" />
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Step 2: Project File Structure
+            Step 2: Project File Structure ({framework === 'vanilla' ? 'Vanilla TypeScript' : 'React + TypeScript'})
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          A clean ThreeDot project organizes HTML overlay elements, engine initialization, and node
-          scripts into distinct files:
+          {framework === 'vanilla' ? (
+            <>
+              A Vanilla TypeScript ThreeDot project uses a single entry point (<code>src/main.ts</code>) that
+              directly mounts the engine into <code>#app</code> in <code>index.html</code>:
+            </>
+          ) : (
+            <>
+              A React TypeScript ThreeDot project delegates UI rendering and lifecycle management to React
+              components, mounting the engine inside <code>src/App.tsx</code> via a <code>useRef</code> container:
+            </>
+          )}
         </Typography>
 
-        <CodeBlock
-          title="Directory Layout"
-          language="text"
-          code={`my-threedot-game/
-├── index.html            # WebGL container + HTML HUD with threedot-signal
+        {framework === 'vanilla' ? (
+          <CodeBlock
+            title="Vanilla TypeScript Directory Layout"
+            language="text"
+            code={`my-threedot-game/
+├── index.html            # WebGL container (#app) & HTML HUD with threedot-signal
 ├── package.json          # Dependencies (only "threedot" required)
 ├── tsconfig.json         # Standard TypeScript configuration
 └── src/
     ├── main.ts           # Engine setup, Camera, Lighting, Scene Assembly
     ├── Player.ts         # Custom Player Node3D with _process loop & jump
     └── style.css         # Fullscreen canvas & overlay HUD styling`}
-        />
+          />
+        ) : (
+          <CodeBlock
+            title="React TypeScript Directory Layout"
+            language="text"
+            code={`my-threedot-game/
+├── index.html            # Standard Vite React DOM mount point (<div id="root">)
+├── package.json          # Dependencies ("react", "react-dom", "threedot")
+├── tsconfig.json         # React TypeScript configuration ("jsx": "react-jsx")
+├── vite.config.ts        # Vite configuration with @vitejs/plugin-react
+└── src/
+    ├── main.tsx          # React application root (ReactDOM.createRoot)
+    ├── App.tsx           # React HUD overlay, useRef canvas mount & Engine lifecycle
+    ├── Player.ts         # Custom Player Node3D (pure TypeScript, framework-agnostic!)
+    └── App.css           # Fullscreen layout & HUD overlay styling`}
+          />
+        )}
+
+        <Box sx={{ mt: 2.5 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
+            Key Architectural Differences:
+          </Typography>
+          <Box component="ul" sx={{ pl: 2.5, m: 0, '& li': { mb: 0.75, fontSize: '13px', color: 'text.secondary' } }}>
+            {framework === 'vanilla' ? (
+              <>
+                <li>
+                  <strong>Direct DOM Mount:</strong> <code>src/main.ts</code> attaches <code>new Engine()</code> directly
+                  to <code>document.getElementById('app')!</code>.
+                </li>
+                <li>
+                  <strong>Static HTML HUD:</strong> Buttons in <code>index.html</code> carry <code>threedot-signal</code>{' '}
+                  attributes that the engine's DOM bridge captures automatically.
+                </li>
+                <li>
+                  <strong>Minimal Footprint:</strong> Zero UI framework dependencies; only <code>threedot</code> and Vite.
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <strong>Component Lifecycle:</strong> <code>src/App.tsx</code> instantiates <code>new Engine()</code> inside{' '}
+                  <code>useEffect</code> with a <code>useRef&lt;HTMLDivElement&gt;</code> and calls <code>engine.dispose()</code> on unmount.
+                </li>
+                <li>
+                  <strong>Declarative JSX HUD:</strong> HUD buttons are native React JSX elements with <code>threedot-signal</code>{' '}
+                  attributes that route clicks directly to 3D node signals.
+                </li>
+                <li>
+                  <strong>Framework-Agnostic Nodes:</strong> Notice that <code>src/Player.ts</code> is identical in both Vanilla and React.
+                  Your 3D gameplay logic remains pure TypeScript OOP with zero framework lock-in.
+                </li>
+              </>
+            )}
+          </Box>
+        </Box>
       </Paper>
 
-      {/* Step 3: Setting Up HTML & HUD */}
+      {/* Step 3: Viewport & HUD Setup */}
       <Paper
         elevation={0}
         sx={{
@@ -192,19 +350,29 @@ npm install -D vite typescript`,
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
           <WebOutlinedIcon fontSize="small" />
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Step 3: HTML Viewport & Declarative Signal HUD
+            Step 3: {framework === 'vanilla' ? 'HTML Viewport & Signal HUD (index.html)' : 'React Root & Fullscreen Styling'}
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Configure <code>index.html</code>. Notice the <code>threedot-signal</code> and <code>threedot-params</code> attributes
-          on the HTML buttons. ThreeDot's DOM bridge automatically captures clicks and triggers the
-          corresponding signals in your 3D game logic without manual event listeners:
+          {framework === 'vanilla' ? (
+            <>
+              In Vanilla TypeScript, configure <code>index.html</code> with an <code>#app</code> container and an overlay{' '}
+              <code>#hud</code>. ThreeDot&apos;s DOM bridge automatically captures button clicks and dispatches signals
+              without manual event listeners:
+            </>
+          ) : (
+            <>
+              In React TypeScript, <code>index.html</code> mounts the standard React root. The HUD buttons are rendered
+              inside <code>src/App.tsx</code>, styled with <code>src/App.css</code>:
+            </>
+          )}
         </Typography>
 
-        <CodeBlock
-          title="index.html"
-          language="html"
-          code={`<!DOCTYPE html>
+        {framework === 'vanilla' ? (
+          <CodeBlock
+            title="index.html"
+            language="html"
+            code={`<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -231,6 +399,7 @@ npm install -D vite typescript`,
         cursor: pointer;
         backdrop-filter: blur(8px);
         font-weight: 600;
+        transition: background 0.15s ease;
       }
       button:hover { background: rgba(255, 255, 255, 0.3); }
     </style>
@@ -249,7 +418,70 @@ npm install -D vite typescript`,
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>`}
-        />
+          />
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <CodeBlock
+              title="index.html (React Host)"
+              language="html"
+              code={`<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ThreeDot React Game</title>
+  </head>
+  <body>
+    <!-- React DOM Root -->
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>`}
+            />
+
+            <CodeBlock
+              title="src/App.css (Fullscreen Canvas & HUD Styling)"
+              language="css"
+              code={`* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root, .game-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0a0a;
+  font-family: sans-serif;
+}
+.viewport {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+#hud {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 10;
+  display: flex;
+  gap: 10px;
+}
+#hud button {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  font-weight: 600;
+  transition: background 0.15s ease;
+}
+#hud button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}`}
+            />
+          </Box>
+        )}
       </Paper>
 
       {/* Step 4: Player Node Logic */}
@@ -271,12 +503,15 @@ npm install -D vite typescript`,
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           Create <code>src/Player.ts</code> subclassing <code>Node3D</code>. It listens to the{' '}
-          <code>player_jump</code> signal dispatched by the HTML HUD button, accepts WASD keyboard
-          input, and updates its position smoothly in the <code>_process(delta)</code> frame hook:
+          <code>player_jump</code> signal dispatched by the HUD button, accepts WASD keyboard input,
+          and updates its position smoothly in the <code>_process(delta)</code> frame hook.
+          <br />
+          <strong>Crucial design note:</strong> This file is <strong>identical in both Vanilla and React</strong>.
+          ThreeDot decouples your 3D gameplay logic completely from any UI library:
         </Typography>
 
         <CodeBlock
-          title="src/Player.ts"
+          title="src/Player.ts (Identical in Vanilla & React)"
           language="typescript"
           code={`import { Node3D, MeshInstance3D, Vector3, SignalBus } from 'threedot';
 
@@ -288,8 +523,10 @@ export class Player extends Node3D {
   private isGrounded = true;
   private keys: Record<string, boolean> = {};
 
-  protected _enterTree(): void {
-    // 1. Attach Box Visual Mesh using primitive string shortcut
+  protected override _enterTree(): void {
+    super._enterTree();
+
+    // 1. Attach Box Visual Mesh using primitive shape shortcut
     this.mesh = new MeshInstance3D({
       shape: 'box',
       shapeArgs: [1, 2, 1], // [width, height, depth]
@@ -299,7 +536,7 @@ export class Player extends Node3D {
     this.mesh.position.y = 1;
     this.addChild(this.mesh);
 
-    // 2. Connect to the HTML HUD signal via SignalBus
+    // 2. Connect to the HUD signal via SignalBus
     SignalBus.connect('player_jump', (power: number = 10) => {
       this.jump(power);
     });
@@ -317,7 +554,7 @@ export class Player extends Node3D {
   }
 
   // Frame tick hook with delta in seconds
-  protected _process(delta: number): void {
+  protected override _process(delta: number): void {
     const moveDir = new Vector3(0, 0, 0);
 
     if (this.keys['w'] || this.keys['arrowup']) moveDir.z -= 1;
@@ -363,19 +600,30 @@ export class Player extends Node3D {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
           <CodeOutlinedIcon fontSize="small" />
           <Typography variant="h5" sx={{ fontWeight: 700 }}>
-            Step 5: Assemble the Scene (src/main.ts)
+            Step 5: Scene Assembly ({framework === 'vanilla' ? 'src/main.ts' : 'src/App.tsx & src/main.tsx'})
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Assemble the engine, camera, sunlight, ground plane, and player in <code>src/main.ts</code>.
-          Notice how <code>SignalBus.connect('spawn_cube', ...)</code> receives parameters passed directly
-          from the HTML HUD:
+          {framework === 'vanilla' ? (
+            <>
+              Assemble the engine, camera, sunlight, ground plane, and player in <code>src/main.ts</code>.
+              Notice how <code>SignalBus.connect(&apos;spawn_cube&apos;, ...)</code> receives parameters passed directly
+              from the HTML HUD:
+            </>
+          ) : (
+            <>
+              In React, assemble the engine and scene inside a <code>useEffect</code> hook within{' '}
+              <code>src/App.tsx</code>. When the component unmounts, <code>engine.dispose()</code> cleans up
+              all WebGL buffers and animation loops automatically:
+            </>
+          )}
         </Typography>
 
-        <CodeBlock
-          title="src/main.ts"
-          language="typescript"
-          code={`import {
+        {framework === 'vanilla' ? (
+          <CodeBlock
+            title="src/main.ts"
+            language="typescript"
+            code={`import {
   Engine,
   Camera3D,
   DirectionalLight3D,
@@ -386,7 +634,7 @@ export class Player extends Node3D {
 } from 'threedot';
 import { Player } from './Player';
 
-// 1. Initialize Engine
+// 1. Initialize Engine on DOM element
 const engine = new Engine({
   container: document.getElementById('app')!,
   antialias: true,
@@ -397,13 +645,13 @@ const engine = new Engine({
 
 const scene = engine.sceneTree.root;
 
-// 2. Camera
+// 2. Camera setup with auto-activation
 const camera = new Camera3D({ fov: 60, makeCurrent: true });
 camera.position.set(0, 8, 14);
 camera.lookAt(new Vector3(0, 1, 0));
 scene.addChild(camera);
 
-// 3. Lighting
+// 3. Lighting setup
 scene.addChild(new AmbientLight3D(0xffffff, 0.4));
 
 const sun = new DirectionalLight3D(0xffffff, 1.4);
@@ -454,7 +702,144 @@ SignalBus.connect('reset_game', () => {
 });
 
 console.log('[ThreeDot] Scene ready. Press WASD to move or click the HUD buttons!');`}
-        />
+          />
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <CodeBlock
+              title="src/App.tsx (React Component + ThreeDot Engine Lifecycle)"
+              language="tsx"
+              code={`import React, { useEffect, useRef } from 'react';
+import {
+  Engine,
+  Camera3D,
+  DirectionalLight3D,
+  AmbientLight3D,
+  MeshInstance3D,
+  Vector3,
+  SignalBus,
+} from 'threedot';
+import { Player } from './Player';
+import './App.css';
+
+export function App() {
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!viewportRef.current) return;
+
+    // 1. Initialize Engine on React container ref
+    const engine = new Engine({
+      container: viewportRef.current,
+      antialias: true,
+      shadows: true,
+      backgroundColor: 0x0a0a0a,
+      autoResize: true,
+    });
+
+    const scene = engine.sceneTree.root;
+
+    // 2. Camera setup with auto-activation
+    const camera = new Camera3D({ fov: 60, makeCurrent: true });
+    camera.position.set(0, 8, 14);
+    camera.lookAt(new Vector3(0, 1, 0));
+    scene.addChild(camera);
+
+    // 3. Lighting setup
+    scene.addChild(new AmbientLight3D(0xffffff, 0.4));
+
+    const sun = new DirectionalLight3D(0xffffff, 1.4);
+    sun.position.set(10, 20, 10);
+    sun.castShadow = true;
+    scene.addChild(sun);
+
+    // 4. Ground Plane
+    const ground = new MeshInstance3D({
+      shape: 'plane',
+      shapeArgs: [60, 60],
+      material: { color: 0x1a1a1a, roughness: 0.8 },
+      receiveShadow: true,
+    });
+    ground.rotation.x = -Math.PI / 2;
+    scene.addChild(ground);
+
+    // 5. Spawn Player Node
+    const player = new Player();
+    player.name = 'Hero';
+    scene.addChild(player);
+
+    // 6. Connect signals dispatched by React JSX buttons
+    const unsubSpawn = SignalBus.connect('spawn_cube', (colorName: string, scale: number = 1.0) => {
+      const cube = new MeshInstance3D({
+        shape: 'box',
+        shapeArgs: [scale, scale, scale],
+        material: {
+          color: colorName === 'gold' ? 0xffd700 : 0x00ffff,
+          roughness: 0.2,
+          metalness: 0.8,
+        },
+        castShadow: true,
+      });
+      cube.position.set(
+        (Math.random() - 0.5) * 20,
+        scale / 2,
+        (Math.random() - 0.5) * 20
+      );
+      scene.addChild(cube);
+      console.log('[ThreeDot] Spawned', colorName, 'cube at', cube.position);
+    });
+
+    const unsubReset = SignalBus.connect('reset_game', () => {
+      player.position.set(0, 0, 0);
+      console.log('[ThreeDot] Player reset to origin');
+    });
+
+    console.log('[ThreeDot] Scene ready. Press WASD to move or click the HUD buttons!');
+
+    // Cleanup on React component unmount
+    return () => {
+      unsubSpawn();
+      unsubReset();
+      engine.dispose();
+    };
+  }, []);
+
+  return (
+    <div className="game-wrapper">
+      {/* React UI HUD Overlay bound to ThreeDot Signals */}
+      <div id="hud">
+        <button threedot-signal="player_jump" threedot-params="[12]">
+          Jump (Power: 12)
+        </button>
+        <button threedot-signal="spawn_cube" threedot-params='["gold", 2.0]'>
+          Spawn Cube
+        </button>
+        <button threedot-signal="reset_game">
+          Reset
+        </button>
+      </div>
+
+      {/* 3D WebGL Canvas Container */}
+      <div ref={viewportRef} className="viewport" />
+    </div>
+  );
+}`}
+            />
+
+            <CodeBlock
+              title="src/main.tsx (React Application Entry Point)"
+              language="tsx"
+              code={`import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { App } from './App';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);`}
+            />
+          </Box>
+        )}
       </Paper>
 
       {/* Step 6: Imperative vs. Declarative JSX */}
@@ -475,7 +860,7 @@ console.log('[ThreeDot] Scene ready. Press WASD to move or click the HUD buttons
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
-          Developers often wonder: <em>"How does JSX work with the code we wrote? Are they two different things?"</em>{' '}
+          Developers often wonder: <em>&quot;How does JSX work with the code we wrote? Are they two different things?&quot;</em>{' '}
           In ThreeDot, JSX and imperative classes are <strong>two ergonomic lenses on the exact same SceneTree</strong>:
         </Typography>
 
@@ -597,7 +982,7 @@ hero.jump(15);`}
 
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
           Open <code>http://localhost:5173/</code> in your browser. Move your player with WASD, jump
-          with the Space bar, and click the HTML HUD buttons to watch the <code>threedot-signal</code>{' '}
+          with the Space bar, and click the HUD buttons to watch the <code>threedot-signal</code>{' '}
           bridge trigger in real time!
         </Typography>
       </Paper>
