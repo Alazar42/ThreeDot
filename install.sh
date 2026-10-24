@@ -14,16 +14,16 @@ set -e
 PACKAGE_URL="https://github.com/Alazar42/ThreeDot/raw/master/packages/threedot-0.1.0.tgz"
 DEFAULT_PROJECT_NAME="my-threedot-game"
 
-# Detect package manager
+# Detect package manager (prefer npm for maximum compatibility)
 detect_pm() {
-  if command -v pnpm >/dev/null 2>&1; then
+  if command -v npm >/dev/null 2>&1; then
+    echo "npm"
+  elif command -v pnpm >/dev/null 2>&1; then
     echo "pnpm"
   elif command -v bun >/dev/null 2>&1; then
     echo "bun"
   elif command -v yarn >/dev/null 2>&1; then
     echo "yarn"
-  elif command -v npm >/dev/null 2>&1; then
-    echo "npm"
   else
     echo "none"
   fi
@@ -47,17 +47,17 @@ if [ -f "package.json" ]; then
   echo "-> Installing threedot using $PM..."
 
   case "$PM" in
+    npm)
+      npm install "$PACKAGE_URL"
+      ;;
     pnpm)
-      pnpm add "$PACKAGE_URL"
+      pnpm add "$PACKAGE_URL" || npm install "$PACKAGE_URL"
       ;;
     yarn)
       yarn add "$PACKAGE_URL"
       ;;
     bun)
       bun add "$PACKAGE_URL"
-      ;;
-    npm)
-      npm install "$PACKAGE_URL"
       ;;
   esac
 
@@ -240,17 +240,17 @@ EOF
 # Install dependencies
 echo "-> Installing dependencies with $PM..."
 case "$PM" in
+  npm)
+    npm install
+    ;;
   pnpm)
-    pnpm install
+    pnpm install || npm install
     ;;
   yarn)
     yarn install
     ;;
   bun)
     bun install
-    ;;
-  npm)
-    npm install
     ;;
 esac
 
