@@ -316,9 +316,9 @@ const path = astar.getPointPath(1, 3);
     brief: 'Construct complete ThreeDot scene trees declaratively using standard React/TSX markup with automatic property-based signal binding.',
     description: `ThreeDot includes a first-class JSX runtime that allows developers to define scene trees declaratively in .tsx files instead of writing imperative addChild() chains. Every node type is available as a JSX tag (e.g. <Node3D>, <MeshInstance3D>, <Camera3D>, <HBoxContainer>, <Button>, <Area3D>), with props mapping directly to node options and nested tags mapping to children.
 
-Properties-Based Signal Binding (on[SignalName]):
-ThreeDot features declarative, props-based signal binding in JSX. Any prop whose name begins with 'on' followed by a capital letter (matching the pattern on[SignalName]) is automatically recognized as an event listener for the node's corresponding Signal:
-- onPressed: Automatically connects to instance.pressed (e.g. Button.pressed.connect(callback))
+Properties-Based Signal Binding (Universal on Any Tag):
+ThreeDot features declarative, props-based signal binding in JSX that works universally on ANY tag—including standard HTML tags (<button>, <div>, <span>, <a>), 3D/2D scene nodes (<Node3D>, <Area3D>, <MeshInstance3D>), UI widgets (<Button>, <Control>), and custom components. Any prop starting with 'on' followed by a capital letter (matching on[SignalName]) is automatically bound:
+- onPressed / onClick: Connects to instance.pressed or DOM 'click' listener
 - onReady: Automatically connects to instance.ready (Node.ready.connect(callback))
 - onTreeEntered / onTreeExited: Connects to Node.treeEntered / Node.treeExited
 - onChildAdded / onChildRemoved: Connects to Node.childAdded / Node.childRemoved
@@ -327,18 +327,18 @@ ThreeDot features declarative, props-based signal binding in JSX. Any prop whose
 - onTextChanged: Connects to LineEdit or Text input signals
 - Custom signals: Any custom Signal declared on a node instance matching camelCase on<SignalName> is automatically connected.
 
-Declarative SignalBus Dispatch (threedotSignal & threedotParams):
-Interactive nodes (such as <Button>) also support declarative global event dispatch via props:
-- threedotSignal (or 'threedot-signal'): The name of the SignalBus event to broadcast when clicked/pressed.
+Declarative SignalBus Dispatch (threedotSignal & threedotParams on ANY Tag):
+Any tag in JSX can dispatch global SignalBus events declaratively:
+- threedotSignal (or 'threedot-signal'): The name of the SignalBus event to broadcast. Works on standard HTML tags (<button>, <div>), 3D nodes (<Node3D>, <Area3D>), widgets (<Button>), and custom components.
 - threedotParams (or 'threedot-params'): Arguments passed to the SignalBus event (an array or a single value).
-When the button or interactive node is triggered, the JSX runtime automatically connects its pressed/clicked signal to SignalBus.emit(signalName, ...params).
+- threedotEvent (or 'threedot-event'): Optional triggering event or signal (e.g. 'ready', 'bodyEntered', 'click', 'pointerdown'). If omitted, ThreeDot automatically binds to interactive signals (pressed, clicked, toggled), DOM click events, or node readiness.
 
 Node Props & Nesting:
 All other props (such as name, position, rotation, scale, processMode, color, geometry, material) are passed directly to node constructors or option setters, and nested JSX child tags are recursively instantiated and appended to the parent node using addChild().`,
     codeExample: `/** @jsxImportSource threedot/jsx */
 import { instantiate, THREE, SignalBus } from 'threedot';
 
-// Build a full scene tree declaratively with properties-based signal binding
+// Build a full scene tree declaratively with universal signal property binding on ANY tag
 const scene = instantiate(
   <Node3D
     name="World"
@@ -353,33 +353,43 @@ const scene = instantiate(
       rotation={{ x: -Math.PI / 2, y: 0, z: 0 }}
     />
 
-    {/* Area3D trigger with onBodyEntered property signal binding */}
+    {/* Area3D trigger with threedotSignal and onBodyEntered property signal binding */}
     <Area3D
       name="Coin"
       position={{ x: 0, y: 1, z: 0 }}
+      threedotSignal="coin_collected"
+      threedotEvent="bodyEntered"
       onBodyEntered={(body) => {
         console.log('Player touched coin:', body.name);
       }}
     />
 
-    {/* UI Hierarchy with property-based signal binding */}
+    {/* UI Hierarchy with signal property binding on HTML tags and UI widgets */}
     <Control name="UI" anchorPreset="FULL_RECT">
       <VBoxContainer separation={8} position={{ x: 20, y: 20 }}>
         <Label text="ThreeDot Game HUD" />
 
-        {/* 1) Local signal binding via onPressed property */}
+        {/* 1) Standard HTML button tag with threedotSignal */}
+        <button
+          threedotSignal="player_jump"
+          threedotParams={[15]}
+        >
+          Jump (HTML button)
+        </button>
+
+        {/* 2) Standard HTML div tag with threedotSignal */}
+        <div
+          threedotSignal="open_settings"
+        >
+          Settings (HTML div)
+        </div>
+
+        {/* 3) UI Widget button with onPressed local signal binding */}
         <Button
           text="Start Game"
           onPressed={() => {
             console.log('Game started via onPressed prop!');
           }}
-        />
-
-        {/* 2) Global SignalBus dispatch via threedotSignal property */}
-        <Button
-          text="Super Jump (Power: 15)"
-          threedotSignal="player_jump"
-          threedotParams={[15]}
         />
       </VBoxContainer>
     </Control>
@@ -389,25 +399,34 @@ const scene = instantiate(
 // Mount the compiled scene tree into the Engine root
 engine.sceneTree.root.addChild(scene);
 
-// Connect to global SignalBus dispatched by threedotSignal
+// Connect to global SignalBus dispatched by threedotSignal on ANY tag
 SignalBus.connect('player_jump', (power: number) => {
   player.jump(power);
+});
+
+SignalBus.connect('coin_collected', (body: any) => {
+  player.addScore(100);
 });`,
     properties: [
       {
         name: 'on[SignalName]',
         type: '(...args: any[]) => void',
-        description: 'Declarative property-based signal binding. Automatically connects callback to the node instance signal matching the event name (e.g. onPressed -> node.pressed, onReady -> node.ready, onTreeEntered -> node.treeEntered, onBodyEntered -> node.bodyEntered, onChildAdded -> node.childAdded).',
+        description: 'Declarative property-based signal binding on ANY tag (HTML tags, 3D nodes, widgets, custom classes). Automatically connects callback to the node instance signal or DOM event (e.g. onPressed -> node.pressed, onClick -> click/pressed, onReady -> node.ready, onBodyEntered -> node.bodyEntered).',
       },
       {
         name: 'threedotSignal / threedot-signal',
         type: 'string',
-        description: 'Declarative property that configures an interactive node (such as Button) to automatically emit a global event via SignalBus when clicked or pressed.',
+        description: 'Declarative property that works on ANY tag (HTML tags like <button> and <div>, 3D nodes like <Area3D> and <Node3D>, widgets like <Button>, or custom classes) to emit a global event via SignalBus.',
       },
       {
         name: 'threedotParams / threedot-params',
         type: 'any | any[]',
         description: 'Parameters passed to the SignalBus event when threedotSignal is emitted.',
+      },
+      {
+        name: 'threedotEvent / threedot-event',
+        type: 'string',
+        description: 'Optional triggering event or signal name (e.g. "ready", "bodyEntered", "click", "pointerdown"). If omitted, ThreeDot automatically detects interactive signals (pressed, clicked, toggled), DOM click events, or node readiness.',
       },
       {
         name: 'children',

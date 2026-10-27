@@ -180,8 +180,8 @@ SignalBus.connect('spawn_item', (itemType: string, points: number) => {
 });
 ```
 
-### 3. Declarative Signal Binding in JSX Properties
-When using ThreeDot's native JSX runtime, connect signals directly through props:
+### 3. Declarative Signal Binding in JSX Properties (Universal on Any Tag)
+When using ThreeDot's native JSX runtime, connect signals and dispatch `SignalBus` events directly through props across **any tag**—including standard HTML tags (`<button>`, `<div>`), 3D/2D nodes (`<Area3D>`, `<Node3D>`), UI widgets (`<Button>`), and custom components:
 
 ```tsx
 /** @jsxImportSource threedot/jsx */
@@ -189,14 +189,19 @@ import { instantiate, SignalBus } from 'threedot';
 
 const ui = instantiate(
   <Node3D name="World" onReady={() => console.log('Ready!')}>
-    {/* Local signal binding via onPressed prop */}
+    {/* Standard HTML tags with threedotSignal */}
+    <button threedotSignal="player_jump" threedotParams={[15]}>Jump</button>
+    <div threedotSignal="toggle_menu">Menu</div>
+
+    {/* UI Widget with local onPressed signal binding */}
     <Button text="Attack" onPressed={() => player.attack()} />
 
-    {/* Global SignalBus dispatch via threedotSignal prop */}
-    <Button text="Jump" threedotSignal="player_jump" threedotParams={[15]} />
-
-    {/* Collision signal binding via onBodyEntered prop */}
-    <Area3D onBodyEntered={(body) => player.takeDamage(10)} />
+    {/* 3D Node with threedotEvent trigger property */}
+    <Area3D
+      threedotSignal="player_hazard"
+      threedotEvent="bodyEntered"
+      onBodyEntered={(body) => player.takeDamage(10)}
+    />
   </Node3D>
 );
 ```

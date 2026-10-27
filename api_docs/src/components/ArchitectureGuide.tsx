@@ -256,34 +256,36 @@ const player = engine.sceneTree.root.getNode<HeroPlayer>('World/Hero');`}
         <h2>8. The 'threedot-signal' HTML & JSX Bridge</h2>
         <p>
           In web games and 3D applications, the user interface is often composed of HTML DOM elements (or React/Vue/Svelte overlays) as well as declarative JSX nodes.
-          ThreeDot eliminates the boilerplate of attaching manual click listeners and passing callbacks through the <strong>threedot-signal</strong> attribute and JSX properties.
+          ThreeDot eliminates the boilerplate of attaching manual click listeners and passing callbacks through the <strong>threedot-signal</strong> attribute and JSX properties across <em>any tag</em> (standard HTML tags, 3D scene nodes, UI widgets, and custom components).
         </p>
         <p>
           Any standard HTML tag or JSX element can declare:
         </p>
         <ul className="guide-list">
-          <li><code>threedot-signal="signal_name"</code> (or JSX prop <code>threedotSignal="signal_name"</code>): The signal name to execute on the global <code>SignalBus</code>.</li>
+          <li><code>threedot-signal="signal_name"</code> (or JSX prop <code>threedotSignal="signal_name"</code>): The signal name to execute on the global <code>SignalBus</code>. Works on any tag (<code>&lt;button&gt;</code>, <code>&lt;div&gt;</code>, <code>&lt;Area3D&gt;</code>, <code>&lt;Button&gt;</code>, <code>&lt;Node3D&gt;</code>).</li>
           <li><code>threedot-params='["arg1", 42]'</code> (or JSX prop <code>{'threedotParams={[...]}'}</code>): Optional arguments passed to the signal listener (JSON array or comma-separated).</li>
-          <li><code>threedot-event="click"</code>: The DOM trigger event (defaults to <code>'click'</code>).</li>
+          <li><code>threedot-event="click"</code> (or JSX prop <code>threedotEvent="bodyEntered"</code>): Optional trigger event or signal (e.g. <code>'click'</code>, <code>'ready'</code>, <code>'bodyEntered'</code>). Defaults to interactive signals, DOM clicks, or readiness.</li>
         </ul>
         <CodeBlock
           language="html"
-          title="HTML Overlay with threedot-signal"
+          title="HTML Overlay with threedot-signal on Any Tag"
           code={`<!-- In your HTML HUD or React/Vue overlay -->
 <div id="hud">
+  <!-- HTML button tag -->
   <button threedot-signal="player_jump" threedot-params="[15]">Jump</button>
-  <button threedot-signal="change_weapon" threedot-params='["plasma_rifle", 100]'>Plasma Rifle</button>
+  
+  <!-- HTML div tag -->
+  <div threedot-signal="change_weapon" threedot-params='["plasma_rifle", 100]'>Plasma Rifle</div>
 </div>`}
         />
         <CodeBlock
           language="tsx"
-          title="JSX Node with threedotSignal Property"
-          code={`// In declarative ThreeDot JSX nodes:
-<Button
-  text="Super Jump"
-  threedotSignal="player_jump"
-  threedotParams={[15]}
-/>`}
+          title="Declarative JSX with threedotSignal on Any Tag"
+          code={`// Works on ANY JSX tag: HTML tags, 3D nodes, or UI widgets!
+<button threedotSignal="player_jump" threedotParams={[15]}>Jump</button>
+<div threedotSignal="toggle_menu">Menu</div>
+<Area3D threedotSignal="player_hazard" threedotEvent="bodyEntered" />
+<Button text="Super Jump" threedotSignal="player_jump" threedotParams={[15]} />`}
         />
         <CodeBlock
           language="typescript"

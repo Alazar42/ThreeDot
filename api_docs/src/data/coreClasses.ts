@@ -574,17 +574,20 @@ export class HealthBarController extends Node {
 
 Signal Binding Approaches in ThreeDot:
 
-1. Properties-Based Signal Binding in JSX (on[SignalName]):
-When building scene trees declaratively with ThreeDot's JSX runtime, you can bind signal listeners directly via component properties/props matching the 'on[SignalName]' convention. The JSX runtime automatically maps 'on<Event>' to the corresponding signal on the instantiated node (converting camelCase, e.g. onPressed -> instance.pressed, onReady -> instance.ready, onTreeEntered -> instance.treeEntered, onBodyEntered -> instance.bodyEntered, onValueChanged -> instance.valueChanged) and invokes signal.connect(callback):
+1. Properties-Based Signal Binding in JSX (Universal on Any Tag):
+When building scene trees declaratively with ThreeDot's JSX runtime, you can bind signal listeners directly via component properties/props matching the 'on[SignalName]' convention. This works across ALL tags—HTML string tags (<button>, <div>, <span>), 3D/2D nodes (<Node3D>, <Area3D>), UI widgets (<Button>), and custom components:
 - <Button text="Click Me" onPressed={() => handlePress()} />
+- <button onClick={() => handlePress()}>Jump</button>
 - <Node3D name="World" onReady={() => console.log('Ready!')} />
 - <Area3D onBodyEntered={(body) => onHazard(body)} />
 
-2. Declarative SignalBus Props in JSX:
-Interactive nodes in JSX also accept declarative SignalBus dispatch properties:
-- threedotSignal="signal_name" (or 'threedot-signal')
-- threedotParams={[...]} (or 'threedot-params')
-When the button or interactive control is clicked or pressed, it automatically emits the named event with arguments onto the global SignalBus.
+2. Declarative SignalBus Props in JSX (Universal on Any Tag):
+The 'threedotSignal' (or 'threedot-signal') and 'threedotParams' properties work universally on ANY tags—not only UI widgets:
+- Standard HTML string tags: <button threedotSignal="player_jump" threedotParams={[15]}>Jump</button>, <div threedotSignal="open_menu" />
+- 3D & 2D scene tags: <Area3D threedotSignal="player_hazard" threedotEvent="bodyEntered" />, <Node3D threedotSignal="level_loaded" threedotEvent="ready" />
+- UI widget tags: <Button text="Attack" threedotSignal="player_attack" threedotParams={['heavy', 45]} />
+- Custom components: Any custom node with signals or events.
+You can use 'threedotEvent' (e.g. threedotEvent="ready", threedotEvent="bodyEntered", threedotEvent="click") to specify which event triggers the dispatch. If omitted, it automatically detects interactive signals (pressed, clicked, toggled), DOM click events, or node readiness.
 
 3. Imperative Signal Binding:
 Connect directly to any signal instance on nodes or custom systems via code:
@@ -594,7 +597,7 @@ Connect directly to any signal instance on nodes or custom systems via code:
 - await signal.wait() to asynchronously await the next emission.
 
 4. HTML & JSX DOM Bridge via 'threedot-signal':
-Standard HTML elements in HUD overlays (such as <button>, <input>, or React/Vue components) can declare:
+Standard HTML elements in HUD overlays (such as <button>, <input>, <div>, or React/Vue components) can declare:
 - threedot-signal="signal_name": The name of the signal to execute when interacted with.
 - threedot-params='["arg1", 42]': JSON-encoded or comma-separated parameters passed to the signal listener.
 - threedot-event="click": Optional DOM event trigger (defaults to 'click').
@@ -603,7 +606,8 @@ When clicked or triggered, ThreeDot automatically routes the signal through Sign
 
 Features:
 - Strong typing: Signal<[number, string]> enforces that emit(42, 'score') takes exactly a number and a string.
-- Declarative JSX Properties: Bind event handlers directly with props like onPressed, onReady, onChildAdded, onBodyEntered.
+- Universal Tag Support: Signal properties work on HTML tags (<button>, <div>), 3D nodes (<Node3D>, <Area3D>), widgets (<Button>), and custom classes.
+- Declarative JSX Properties: Bind event handlers directly with props like onPressed, onClick, onReady, onBodyEntered.
 - HTML / DOM Bridge: Connect standard UI buttons to 3D game logic with zero boilerplate event listeners.
 - Connection Management: connect() returns a DisconnectFn callback for one-line unsubscriptions.
 - One-shot Connections: connectOneShot() / once() automatically removes the listener after its first invocation.
@@ -611,26 +615,30 @@ Features:
 - Automatic Cleanup: Calling disconnectAll() removes all registered listeners.`,
     codeExample: `import { Signal, SignalBus, Button, Node3D, Area3D } from 'threedot';
 
-// ── 1. Properties-Based Signal Binding in JSX ──
-// Any 'on<SignalName>' prop automatically connects to node.<signalName>:
+// ── 1. Properties-Based Signal Binding Works on ANY Tag ──
 const scene = (
   <Node3D name="World" onReady={() => console.log('World initialized!')}>
-    {/* Local signal binding via onPressed prop -> Button.pressed.connect(...) */}
+    {/* Standard HTML button tag with threedotSignal */}
+    <button threedotSignal="player_jump" threedotParams={[15]}>
+      Jump
+    </button>
+
+    {/* Standard HTML div tag with threedotSignal */}
+    <div threedotSignal="toggle_pause_menu">
+      Pause
+    </div>
+
+    {/* UI Widget button with onPressed and threedotSignal */}
     <Button
       text="Fire Laser"
       onPressed={() => player.fire()}
     />
 
-    {/* Global SignalBus dispatch via threedotSignal prop */}
-    <Button
-      text="Super Jump"
-      threedotSignal="player_jump"
-      threedotParams={[15]}
-    />
-
-    {/* Collision signal binding via onBodyEntered prop */}
+    {/* 3D Area3D tag with threedotEvent trigger */}
     <Area3D
       name="HazardZone"
+      threedotSignal="player_hazard"
+      threedotEvent="bodyEntered"
       onBodyEntered={(body) => player.takeDamage(10)}
     />
   </Node3D>
