@@ -553,7 +553,7 @@ console.log('[ThreeDot] Scene ready. Press WASD to move or click the HUD buttons
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: '13px' }}>
                 Assemble scene hierarchies declaratively using JSX tags. The JSX runtime instantiates
-                nodes and wires signal handlers automatically.
+                nodes and wires signal handlers automatically via <code>on[SignalName]</code> (e.g. <code>onPressed</code>, <code>onReady</code>) and <code>threedotSignal</code> props.
               </Typography>
               <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
                 Best for: Static level layouts, camera rigs, light configurations, UI HUD hierarchies.
@@ -563,7 +563,7 @@ console.log('[ThreeDot] Scene ready. Press WASD to move or click the HUD buttons
         </Box>
 
         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          Here is how your custom <code>Player</code> class and declarative JSX interoperate seamlessly:
+          Here is how your custom <code>Player</code> class and declarative JSX interoperate seamlessly with property signal binding:
         </Typography>
 
         <CodeBlock
@@ -574,7 +574,7 @@ import { Player } from './Player';
 
 // Declare a full level layout in JSX, embedding your imperative Player class directly!
 const levelScene = (
-  <Node3D name="World">
+  <Node3D name="World" onReady={() => console.log('World initialized!')}>
     <Camera3D fov={60} position={[0, 8, 14]} makeCurrent />
     <DirectionalLight3D intensity={1.5} position={[10, 20, 10]} castShadow />
     
@@ -587,8 +587,12 @@ const levelScene = (
       rotation={[-Math.PI / 2, 0, 0]}
     />
 
-    {/* Your custom imperative Player class inside JSX! */}
-    <Player name="Hero" position={[0, 0, 0]} />
+    {/* Your custom imperative Player class inside JSX with onReady property signal binding! */}
+    <Player
+      name="Hero"
+      position={[0, 0, 0]}
+      onReady={() => console.log('Hero player spawned and ready!')}
+    />
   </Node3D>
 );
 

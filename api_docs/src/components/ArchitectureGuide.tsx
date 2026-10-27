@@ -137,12 +137,12 @@ export const ArchitectureGuide: React.FC<ArchitectureGuideProps> = ({ onNavigate
           <button type="button" className="inline-link" onClick={() => onNavigateClass('Signal')}>
             Signal
           </button>{' '}
-          instances:
+          instances. Signals can be connected imperatively via <code>connect()</code> or declaratively via JSX properties using the <code>on[SignalName]</code> convention (e.g. <code>onPressed</code>, <code>onReady</code>, <code>onBodyEntered</code>):
         </p>
         <CodeBlock
           language="typescript"
-          title="Signals Example"
-          code={`// Emitter Node
+          title="Signals Example (Imperative & Declarative)"
+          code={`// 1. Emitter Node definition
 export class Coin extends Area3D {
   readonly collected = new Signal<[number]>('coin_collected');
 
@@ -152,10 +152,19 @@ export class Coin extends Area3D {
   }
 }
 
-// Receiver Node
+// 2. Imperative Signal Connection
 coin.collected.connect((points) => {
   hud.addScore(points);
-});`}
+});
+
+// 3. Declarative Property Signal Binding in JSX (on[SignalName])
+// The JSX runtime automatically connects 'on<SignalName>' props:
+const level = (
+  <Node3D name="World" onReady={() => console.log('Level ready!')}>
+    <Button text="Start" onPressed={() => startGame()} />
+    <Coin onCollected={(points) => hud.addScore(points)} />
+  </Node3D>
+);`}
         />
       </section>
 
@@ -198,24 +207,39 @@ control.marginBottom = 60;`}
         </p>
         <p>
           You can write complex game actors using clean object-oriented TypeScript classes (subclassing <code>Node3D</code> and overriding <code>_process(delta)</code>),
-          and then embed those custom classes directly into JSX scene hierarchies:
+          and then embed those custom classes directly into JSX scene hierarchies, complete with declarative property signal bindings (<code>onReady</code>, <code>onPressed</code>, <code>onBodyEntered</code>):
         </p>
         <CodeBlock
           language="tsx"
-          title="Seamless JSX & OOP Interoperability"
-          code={`// 1. Write an imperative game actor
+          title="Seamless JSX & OOP Interoperability with Property Signal Binding"
+          code={`// 1. Write an imperative game actor with signals
 export class HeroPlayer extends Node3D {
+  readonly died = new Signal<[]>('died');
+
   override _process(delta: number): void {
     // Game loop ticks...
   }
 }
 
-// 2. Embed into a declarative JSX scene hierarchy
+// 2. Embed into a declarative JSX hierarchy with property signal bindings
 const level = (
-  <Node3D name="World">
+  <Node3D name="World" onReady={() => console.log('World initialized!')}>
     <Camera3D fov={60} position={[0, 5, 10]} makeCurrent />
     <DirectionalLight3D intensity={1.5} position={[10, 20, 10]} />
-    <HeroPlayer name="Hero" position={[0, 1, 0]} />
+    
+    {/* Embedding custom OOP class + property signal binding via onDied */}
+    <HeroPlayer
+      name="Hero"
+      position={[0, 1, 0]}
+      onDied={() => hud.showGameOver()}
+    />
+
+    {/* UI Button with property signal binding via onPressed */}
+    <Button
+      text="Respawn"
+      position={[20, 20]}
+      onPressed={() => respawnPlayer()}
+    />
   </Node3D>
 );
 
@@ -231,15 +255,15 @@ const player = engine.sceneTree.root.getNode<HeroPlayer>('World/Hero');`}
       <section className="guide-section">
         <h2>8. The 'threedot-signal' HTML & JSX Bridge</h2>
         <p>
-          In web games and 3D applications, the user interface is often composed of HTML DOM elements (or React/Vue/Svelte overlays).
-          ThreeDot eliminates the boilerplate of attaching manual click listeners and passing callbacks through the <strong>threedot-signal</strong> attribute.
+          In web games and 3D applications, the user interface is often composed of HTML DOM elements (or React/Vue/Svelte overlays) as well as declarative JSX nodes.
+          ThreeDot eliminates the boilerplate of attaching manual click listeners and passing callbacks through the <strong>threedot-signal</strong> attribute and JSX properties.
         </p>
         <p>
           Any standard HTML tag or JSX element can declare:
         </p>
         <ul className="guide-list">
-          <li><code>threedot-signal="signal_name"</code>: The signal name to execute on the global <code>SignalBus</code>.</li>
-          <li><code>threedot-params='["arg1", 42]'</code>: Optional arguments passed to the signal listener (JSON array or comma-separated).</li>
+          <li><code>threedot-signal="signal_name"</code> (or JSX prop <code>threedotSignal="signal_name"</code>): The signal name to execute on the global <code>SignalBus</code>.</li>
+          <li><code>threedot-params='["arg1", 42]'</code> (or JSX prop <code>{'threedotParams={[...]}'}</code>): Optional arguments passed to the signal listener (JSON array or comma-separated).</li>
           <li><code>threedot-event="click"</code>: The DOM trigger event (defaults to <code>'click'</code>).</li>
         </ul>
         <CodeBlock
@@ -252,11 +276,21 @@ const player = engine.sceneTree.root.getNode<HeroPlayer>('World/Hero');`}
 </div>`}
         />
         <CodeBlock
+          language="tsx"
+          title="JSX Node with threedotSignal Property"
+          code={`// In declarative ThreeDot JSX nodes:
+<Button
+  text="Super Jump"
+  threedotSignal="player_jump"
+  threedotParams={[15]}
+/>`}
+        />
+        <CodeBlock
           language="typescript"
           title="Listening in 3D Game Code"
           code={`import { SignalBus } from 'threedot';
 
-// Automatically receives events when the user clicks the HTML button!
+// Automatically receives events when the user clicks the HTML button or JSX control!
 SignalBus.connect('player_jump', (jumpPower: number) => {
   player.jump(jumpPower);
 });

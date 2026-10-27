@@ -313,14 +313,38 @@ const path = astar.getPointPath(1, 3);
   {
     name: 'JSX Declarative Syntax',
     category: 'JSX Layer',
-    brief: 'Construct complete ThreeDot scene trees declaratively using standard React/TSX markup.',
-    description: `ThreeDot includes a first-class JSX runtime that allows developers to define scene trees declaratively in .tsx files instead of writing imperative addChild() chains. Every node type is available as a JSX tag (e.g. <Node3D>, <MeshInstance3D>, <Camera3D>, <HBoxContainer>), with props mapping directly to node options and nested tags mapping to children.`,
-    codeExample: `/** @jsxImportSource threedot/jsx */
-import { instantiate, THREE } from 'threedot';
+    brief: 'Construct complete ThreeDot scene trees declaratively using standard React/TSX markup with automatic property-based signal binding.',
+    description: `ThreeDot includes a first-class JSX runtime that allows developers to define scene trees declaratively in .tsx files instead of writing imperative addChild() chains. Every node type is available as a JSX tag (e.g. <Node3D>, <MeshInstance3D>, <Camera3D>, <HBoxContainer>, <Button>, <Area3D>), with props mapping directly to node options and nested tags mapping to children.
 
-// Build a full scene tree declaratively
+Properties-Based Signal Binding (on[SignalName]):
+ThreeDot features declarative, props-based signal binding in JSX. Any prop whose name begins with 'on' followed by a capital letter (matching the pattern on[SignalName]) is automatically recognized as an event listener for the node's corresponding Signal:
+- onPressed: Automatically connects to instance.pressed (e.g. Button.pressed.connect(callback))
+- onReady: Automatically connects to instance.ready (Node.ready.connect(callback))
+- onTreeEntered / onTreeExited: Connects to Node.treeEntered / Node.treeExited
+- onChildAdded / onChildRemoved: Connects to Node.childAdded / Node.childRemoved
+- onBodyEntered / onAreaEntered: Connects to Area3D / Area2D collision signals
+- onValueChanged: Connects to Slider or Range control signals
+- onTextChanged: Connects to LineEdit or Text input signals
+- Custom signals: Any custom Signal declared on a node instance matching camelCase on<SignalName> is automatically connected.
+
+Declarative SignalBus Dispatch (threedotSignal & threedotParams):
+Interactive nodes (such as <Button>) also support declarative global event dispatch via props:
+- threedotSignal (or 'threedot-signal'): The name of the SignalBus event to broadcast when clicked/pressed.
+- threedotParams (or 'threedot-params'): Arguments passed to the SignalBus event (an array or a single value).
+When the button or interactive node is triggered, the JSX runtime automatically connects its pressed/clicked signal to SignalBus.emit(signalName, ...params).
+
+Node Props & Nesting:
+All other props (such as name, position, rotation, scale, processMode, color, geometry, material) are passed directly to node constructors or option setters, and nested JSX child tags are recursively instantiated and appended to the parent node using addChild().`,
+    codeExample: `/** @jsxImportSource threedot/jsx */
+import { instantiate, THREE, SignalBus } from 'threedot';
+
+// Build a full scene tree declaratively with properties-based signal binding
 const scene = instantiate(
-  <Node3D name="World">
+  <Node3D
+    name="World"
+    onReady={() => console.log('World node ready!')}
+    onTreeEntered={() => console.log('World attached to scene tree')}
+  >
     <Camera3D name="MainCam" position={{ x: 0, y: 5, z: 10 }} />
     <DirectionalLight3D name="Sun" intensity={1.8} position={{ x: 5, y: 10, z: 5 }} />
     <MeshInstance3D
@@ -328,19 +352,72 @@ const scene = instantiate(
       geometry={new THREE.PlaneGeometry(20, 20)}
       rotation={{ x: -Math.PI / 2, y: 0, z: 0 }}
     />
+
+    {/* Area3D trigger with onBodyEntered property signal binding */}
+    <Area3D
+      name="Coin"
+      position={{ x: 0, y: 1, z: 0 }}
+      onBodyEntered={(body) => {
+        console.log('Player touched coin:', body.name);
+      }}
+    />
+
+    {/* UI Hierarchy with property-based signal binding */}
     <Control name="UI" anchorPreset="FULL_RECT">
       <VBoxContainer separation={8} position={{ x: 20, y: 20 }}>
-        <Label text="ThreeDot JSX Scene" />
-        <Button text="Start Game" />
+        <Label text="ThreeDot Game HUD" />
+
+        {/* 1) Local signal binding via onPressed property */}
+        <Button
+          text="Start Game"
+          onPressed={() => {
+            console.log('Game started via onPressed prop!');
+          }}
+        />
+
+        {/* 2) Global SignalBus dispatch via threedotSignal property */}
+        <Button
+          text="Super Jump (Power: 15)"
+          threedotSignal="player_jump"
+          threedotParams={[15]}
+        />
       </VBoxContainer>
     </Control>
   </Node3D>
 );
 
-engine.sceneTree.root.addChild(scene);`,
-    properties: [],
+// Mount the compiled scene tree into the Engine root
+engine.sceneTree.root.addChild(scene);
+
+// Connect to global SignalBus dispatched by threedotSignal
+SignalBus.connect('player_jump', (power: number) => {
+  player.jump(power);
+});`,
+    properties: [
+      {
+        name: 'on[SignalName]',
+        type: '(...args: any[]) => void',
+        description: 'Declarative property-based signal binding. Automatically connects callback to the node instance signal matching the event name (e.g. onPressed -> node.pressed, onReady -> node.ready, onTreeEntered -> node.treeEntered, onBodyEntered -> node.bodyEntered, onChildAdded -> node.childAdded).',
+      },
+      {
+        name: 'threedotSignal / threedot-signal',
+        type: 'string',
+        description: 'Declarative property that configures an interactive node (such as Button) to automatically emit a global event via SignalBus when clicked or pressed.',
+      },
+      {
+        name: 'threedotParams / threedot-params',
+        type: 'any | any[]',
+        description: 'Parameters passed to the SignalBus event when threedotSignal is emitted.',
+      },
+      {
+        name: 'children',
+        type: 'Node | Node[] | any',
+        description: 'Child nodes nested inside this element. Automatically instantiated and appended via addChild().',
+      },
+    ],
     methods: [
       { name: 'instantiate', returns: 'Node', params: [{ name: 'jsxElement', type: 'JSX.Element' }], description: 'Compiles a declarative JSX tree element into an instantiated ThreeDot Node hierarchy.' },
+      { name: 'createElement', returns: 'Node', params: [{ name: 'type', type: 'JSXElementType' }, { name: 'props', type: 'JSXProps | null' }, { name: '...children', type: 'any[]' }], description: 'Underlying JSX factory function that instantiates nodes, attaches children, and wires on[SignalName] and threedotSignal properties.' },
     ],
     signals: [],
   },

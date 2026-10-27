@@ -11,6 +11,7 @@ export interface MethodParam {
   type: string;
   defaultValue?: string;
   optional?: boolean;
+  description?: string;
 }
 
 export interface MethodDoc {

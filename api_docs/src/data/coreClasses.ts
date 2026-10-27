@@ -570,10 +570,31 @@ export class HealthBarController extends Node {
     name: 'Signal',
     category: 'Core Systems',
     brief: 'A strongly typed, decoupled observer pattern implementation mirroring Godot signals. Enables nodes to broadcast events safely without tight coupling.',
-    description: `Signals in ThreeDot provide a type-safe publish/subscribe messaging system. Unlike standard event emitters, ThreeDot signals are strongly typed through generic tuples, ensuring that emit arguments match listener parameters at compile time.
+    description: `Signals in ThreeDot provide a type-safe publish/subscribe messaging system modeled after Godot signals. Unlike standard event emitters, ThreeDot signals are strongly typed through generic tuples, ensuring that emit arguments match listener parameters at compile time.
 
-HTML & JSX Integration via 'threedot-signal':
-ThreeDot bridges the DOM and 3D scenes seamlessly through the 'threedot-signal' attribute. Any standard HTML element (such as a <button>, <input>, or JSX tag) can specify:
+Signal Binding Approaches in ThreeDot:
+
+1. Properties-Based Signal Binding in JSX (on[SignalName]):
+When building scene trees declaratively with ThreeDot's JSX runtime, you can bind signal listeners directly via component properties/props matching the 'on[SignalName]' convention. The JSX runtime automatically maps 'on<Event>' to the corresponding signal on the instantiated node (converting camelCase, e.g. onPressed -> instance.pressed, onReady -> instance.ready, onTreeEntered -> instance.treeEntered, onBodyEntered -> instance.bodyEntered, onValueChanged -> instance.valueChanged) and invokes signal.connect(callback):
+- <Button text="Click Me" onPressed={() => handlePress()} />
+- <Node3D name="World" onReady={() => console.log('Ready!')} />
+- <Area3D onBodyEntered={(body) => onHazard(body)} />
+
+2. Declarative SignalBus Props in JSX:
+Interactive nodes in JSX also accept declarative SignalBus dispatch properties:
+- threedotSignal="signal_name" (or 'threedot-signal')
+- threedotParams={[...]} (or 'threedot-params')
+When the button or interactive control is clicked or pressed, it automatically emits the named event with arguments onto the global SignalBus.
+
+3. Imperative Signal Binding:
+Connect directly to any signal instance on nodes or custom systems via code:
+- node.ready.connect(() => { ... })
+- button.pressed.connect(() => { ... })
+- signal.connectOneShot(() => { ... }) (or signal.once(() => { ... }))
+- await signal.wait() to asynchronously await the next emission.
+
+4. HTML & JSX DOM Bridge via 'threedot-signal':
+Standard HTML elements in HUD overlays (such as <button>, <input>, or React/Vue components) can declare:
 - threedot-signal="signal_name": The name of the signal to execute when interacted with.
 - threedot-params='["arg1", 42]': JSON-encoded or comma-separated parameters passed to the signal listener.
 - threedot-event="click": Optional DOM event trigger (defaults to 'click').
@@ -582,21 +603,40 @@ When clicked or triggered, ThreeDot automatically routes the signal through Sign
 
 Features:
 - Strong typing: Signal<[number, string]> enforces that emit(42, 'score') takes exactly a number and a string.
+- Declarative JSX Properties: Bind event handlers directly with props like onPressed, onReady, onChildAdded, onBodyEntered.
 - HTML / DOM Bridge: Connect standard UI buttons to 3D game logic with zero boilerplate event listeners.
 - Connection Management: connect() returns a DisconnectFn callback for one-line unsubscriptions.
-- One-shot Connections: connectOnce() automatically removes the listener after its first invocation.
+- One-shot Connections: connectOneShot() / once() automatically removes the listener after its first invocation.
+- Async Support: wait() returns a Promise that resolves on the next emission.
 - Automatic Cleanup: Calling disconnectAll() removes all registered listeners.`,
-    codeExample: `import { Signal, SignalBus } from 'threedot';
+    codeExample: `import { Signal, SignalBus, Button, Node3D, Area3D } from 'threedot';
 
-// 1. In HTML or JSX UI overlay:
-// <button threedot-signal="player_jump" threedot-params="[15]">Jump (Power: 15)</button>
+// ── 1. Properties-Based Signal Binding in JSX ──
+// Any 'on<SignalName>' prop automatically connects to node.<signalName>:
+const scene = (
+  <Node3D name="World" onReady={() => console.log('World initialized!')}>
+    {/* Local signal binding via onPressed prop -> Button.pressed.connect(...) */}
+    <Button
+      text="Fire Laser"
+      onPressed={() => player.fire()}
+    />
 
-// 2. In 3D player or game script:
-SignalBus.connect('player_jump', (power: number) => {
-  player.jump(power);
-});
+    {/* Global SignalBus dispatch via threedotSignal prop */}
+    <Button
+      text="Super Jump"
+      threedotSignal="player_jump"
+      threedotParams={[15]}
+    />
 
-// 3. Define a custom typed node signal
+    {/* Collision signal binding via onBodyEntered prop */}
+    <Area3D
+      name="HazardZone"
+      onBodyEntered={(body) => player.takeDamage(10)}
+    />
+  </Node3D>
+);
+
+// ── 2. Imperative Signal Binding in Code ──
 const scoreUpdated = new Signal<[number, number]>('score_updated');
 
 const disconnect = scoreUpdated.connect((delta, total) => {
@@ -604,7 +644,14 @@ const disconnect = scoreUpdated.connect((delta, total) => {
 });
 
 scoreUpdated.emit(10, 100);
-disconnect();`,
+disconnect();
+
+// ── 3. HTML / DOM Bridge ──
+// In HTML HUD overlay:
+// <button threedot-signal="player_jump" threedot-params="[15]">Jump</button>
+SignalBus.connect('player_jump', (power: number) => {
+  player.jump(power);
+});`,
     properties: [
       {
         name: 'name',
@@ -628,24 +675,43 @@ disconnect();`,
         returns: '() => void',
         params: [
           { name: 'callback', type: '(...args: T) => void', description: 'Function to invoke when signal is emitted' },
-          { name: 'target?', type: 'unknown', description: 'Optional context object (thisArg)' },
+          { name: 'options?', type: '{ oneShot?: boolean; target?: object }', description: 'Optional connection options' },
         ],
         description: 'Subscribes a callback to this signal. Returns a cleanup function that disconnects the callback when called.',
       },
       {
-        name: 'connectOnce',
+        name: 'connectOneShot',
         returns: '() => void',
         params: [
           { name: 'callback', type: '(...args: T) => void', description: 'Function invoked only on the next emission' },
-          { name: 'target?', type: 'unknown', description: 'Optional context object (thisArg)' },
         ],
-        description: 'Connects a listener that automatically disconnects after receiving its first emission.',
+        description: 'Connects a listener that automatically disconnects after receiving its first emission (alias: once).',
+      },
+      {
+        name: 'once',
+        returns: '() => void',
+        params: [
+          { name: 'callback', type: '(...args: T) => void', description: 'Function invoked only on the next emission' },
+        ],
+        description: 'Alias for connectOneShot. Automatically removes listener after first invocation.',
+      },
+      {
+        name: 'wait',
+        returns: 'Promise<T>',
+        params: [],
+        description: 'Returns a Promise that resolves with emission arguments the next time this signal is emitted.',
       },
       {
         name: 'disconnect',
-        returns: 'boolean',
+        returns: 'void',
         params: [{ name: 'callback', type: '(...args: T) => void', description: 'The callback function to remove' }],
-        description: 'Disconnects a previously registered callback. Returns true if the callback was found and removed.',
+        description: 'Disconnects a previously registered callback.',
+      },
+      {
+        name: 'disconnectTarget',
+        returns: 'void',
+        params: [{ name: 'target', type: 'object', description: 'Target object context to disconnect' }],
+        description: 'Disconnects all listeners bound to a particular target object.',
       },
       {
         name: 'disconnectAll',
@@ -672,30 +738,39 @@ disconnect();`,
     name: 'SignalBus',
     category: 'Core Systems',
     brief: 'Global decoupled pub/sub event router and automatic HTML/JSX DOM signal bridge for ThreeDot.',
-    description: `SignalBus acts as a centralized event broker that enables communication across isolated nodes, systems, and HTML overlay elements.
+    description: `SignalBus acts as a centralized event broker that enables communication across isolated nodes, systems, and UI overlay elements.
 
-It also hosts the automatic DOM Signal Bridge, which monitors clicks and inputs on elements annotated with 'threedot-signal' and dispatches them with parsed arguments.
+SignalBus events can be dispatched in three ways:
+1. Declarative JSX Properties: Interactive nodes like <Button threedotSignal="player_attack" threedotParams={["slash", 45]} /> automatically emit to SignalBus when pressed or clicked.
+2. HTML / DOM Bridge: The automatic DOM bridge monitors clicks and inputs on HTML elements annotated with 'threedot-signal="player_attack"' and 'threedot-params='["slash", 45]''.
+3. Programmatically in Code: Via SignalBus.emit('player_attack', 'slash', 45).
 
 Usage:
-1. In HTML or JSX UI overlay:
+1. In JSX scene tree or UI:
+   <Button text="Attack" threedotSignal="player_attack" threedotParams={["heavy_slash", 45]} />
+
+2. In HTML HUD overlay:
    <button threedot-signal="player_attack" threedot-params='["heavy_slash", 45]'>Attack</button>
 
-2. In 3D player or game script:
+3. In 3D player or game script:
    SignalBus.connect('player_attack', (attackType: string, power: number) => {
      player.performAttack(attackType, power);
    });`,
     codeExample: `import { SignalBus } from 'threedot';
 
-// Connect to a global signal triggered by HTML or another node
+// 1. Connect to a global signal in game code
 const unsubscribe = SignalBus.connect('spawn_enemy', (enemyType: string, level: number) => {
   console.log(\`Spawning \${enemyType} at level \${level}\`);
 });
 
-// Emit programmatically
-SignalBus.emit('spawn_enemy', 'goblin', 3);
+// 2. Trigger via JSX component property:
+// <Button text="Spawn Goblin" threedotSignal="spawn_enemy" threedotParams={['goblin', 3]} />
 
-// In HTML overlay:
-// <button threedot-signal="spawn_enemy" threedot-params='["dragon", 50]'>Summon Boss</button>`,
+// 3. Trigger via HTML DOM overlay attribute:
+// <button threedot-signal="spawn_enemy" threedot-params='["dragon", 50]'>Summon Boss</button>
+
+// 4. Emit programmatically:
+SignalBus.emit('spawn_enemy', 'orc', 5);`,
     properties: [],
     methods: [
       {
